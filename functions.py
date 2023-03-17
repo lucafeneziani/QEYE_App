@@ -5,7 +5,7 @@ from constants import *
 import scipy.special as spspec
 import math
 
-def mlfc_analysis(data_array):
+def mlfc_analysis(data_array, manual=False):
 
     filter_dim = 7            # optimal = 7
     negative_signal='yes'     # yes or no
@@ -58,26 +58,42 @@ def mlfc_analysis(data_array):
     print('Peak channel: ',peak_pos)
     print('Peak value: ',peak_val)
 
-    # ANALYSIS WINDOW DEFINITION (ROI for convolution):
-    threshold = peak_val*threshold_percent
-    stop_a = peak_pos#limits initialized to the peak
-    stop_b = peak_pos
-    while signal[stop_a]>threshold:#limit set to the window left border
-        stop_a -= 1
-        if stop_a == 0:#no values below THR
-            print('lower bound not found: too low threshold')
-            break
-    stop_a -= window_add #adding chs on the left if needed
-    if stop_a<0:#max limit at 0
-        stop_a = 0
-    while signal[stop_b]>threshold:#limit set to the window right border
-        stop_b += 1
-        if stop_b == channels-1:#no values below THR
-            print('upper bound not found: too low threshold')
-            break
-    stop_b += window_add #adding chs on the right if needed
-    if stop_b>channels-1:#max limit at last channel
-        stop_b = channels-1
+    if manual == False:
+        # ANALYSIS WINDOW DEFINITION (ROI for convolution):
+        threshold = peak_val*threshold_percent
+        stop_a = peak_pos#limits initialized to the peak
+        stop_b = peak_pos
+        while signal[stop_a]>threshold:#limit set to the window left border
+            stop_a -= 1
+            if stop_a == 0:#no values below THR
+                print('lower bound not found: too low threshold')
+                break
+        stop_a -= window_add #adding chs on the left if needed
+        if stop_a<0:#max limit at 0
+            stop_a = 0
+        while signal[stop_b]>threshold:#limit set to the window right border
+            stop_b += 1
+            if stop_b == channels-1:#no values below THR
+                print('upper bound not found: too low threshold')
+                break
+        stop_b += window_add #adding chs on the right if needed
+        if stop_b>channels-1:#max limit at last channel
+            stop_b = channels-1
+        
+
+    else:
+        # MANUAL WINDOWS DEFINITION
+        if 0 < manual[0] < channels:
+            stop_a = manual[0]
+        else:
+            stop_a = 0
+
+        if 0 < manual[1] < channels:
+            stop_b = manual[1]
+        else:
+            stop_b = channels - 1
+        
+
     print('window = ({},{})'.format(stop_a,stop_b))
 
     # RECONSTRUCTION WITH BORTFELD CURVES:
@@ -112,7 +128,7 @@ def mlfc_analysis(data_array):
     print("CLinical range is {} mm".format(cl_range))
     peak_plt_ratio = peak_mean/plt_mean # peak to plateau ratio
     rawcoord_list = x_coord_we
-    rawdata_list = signal
+    rawdata_list = data_array
     coord_list = x_coord_we
     bort_norm = [el * (peak_val/peak_mean) for el in bort_fin]
 

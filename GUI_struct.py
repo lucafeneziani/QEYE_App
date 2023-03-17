@@ -1,7 +1,7 @@
 import numpy as np
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QPushButton, QLabel, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QPushButton, QLabel, QFileDialog, QMessageBox, QLineEdit
 import pyqtgraph as pg
 import os
 
@@ -32,6 +32,7 @@ class QApp(QMainWindow):
         self.isflipped       = False
         self.Zdataplot       = False
         self.Zfitplot        = False
+        self.analysis_window = False
 
         #########################################################################
         # GUI STYLE
@@ -83,6 +84,9 @@ class QApp(QMainWindow):
 
         # Z Plot
         self.ZPlot = pg.PlotWidget(self)
+        self.ZPlot.setLabel('left','counts')
+        self.ZPlot.setLabel('bottom','channels')
+        self.ZPlot.setTitle('Profile Z total counts')
         self.ZPlot.resize(round(0.65*width), round(0.45*height))
         self.ZPlot.move(round(0.02*width), round(0.15*height))
         self.ZPlot.setBackground('w')
@@ -219,12 +223,48 @@ class QApp(QMainWindow):
         self.enableZcalib.setStyleSheet(enable_style)
         self.enableZcalib.setEnabled(False)
 
+        # Manual label
+        self.manuallabel = QLabel(self) 
+        self.manuallabel.setText('Manual - Windows edges:')
+        self.manuallabel.resize(round(0.135*width), round(0.03*height))
+        self.manuallabel.move(round(0.845*width), round(0.6*height))
+        self.manuallabel.setStyleSheet('border: None')
+
+        # Windows edges definition
+        # left
+        self.leftlabel = QLabel(self) 
+        self.leftlabel.setText('left edge:')
+        self.leftlabel.resize(round(0.06*width), round(0.03*height))
+        self.leftlabel.move(round(0.8*width), round(0.65*height))
+        self.leftlabel.setStyleSheet('border: None')
+        self.left_edge = QLineEdit(self)
+        self.left_edge.resize(round(0.06*width), round(0.03*height))
+        self.left_edge.move(round(0.85*width), round(0.65*height))
+        self.left_edge.setEnabled(False)
+        # right
+        self.rightlabel = QLabel(self) 
+        self.rightlabel.setText('right edge:')
+        self.rightlabel.resize(round(0.06*width), round(0.03*height))
+        self.rightlabel.move(round(0.8*width), round(0.68*height))
+        self.rightlabel.setStyleSheet('border: None')
+        self.right_edge = QLineEdit(self)
+        self.right_edge.resize(round(0.06*width), round(0.03*height))
+        self.right_edge.move(round(0.85*width), round(0.68*height))
+        self.right_edge.setEnabled(False)
+
+        # Manual window button
+        self.manual_window = QPushButton(self)
+        self.manual_window.setText("Apply manual window")
+        self.manual_window.resize(round(0.2*width), round(0.03*height))
+        self.manual_window.move(round(0.79*width), round(0.73*height))
+        self.manual_window.clicked.connect(self.Set_Windows_edge)
+        self.manual_window.setEnabled(False)
 
         # Reset All button
         self.resetall = QPushButton(self)
         self.resetall.setText("Reset all")
         self.resetall.resize(round(0.2*width), round(0.05*height))
-        self.resetall.move(round(0.79*width), round(0.7*height))
+        self.resetall.move(round(0.79*width), round(0.8*height))
         self.resetall.clicked.connect(self.Reset_all)
         self.resetall.setStyleSheet('background-color: lightgray; color: red')
 
@@ -233,7 +273,7 @@ class QApp(QMainWindow):
         self.analyze.setText("ANALYZE")
         self.analyze.setFont(textstyle)
         self.analyze.resize(round(0.2*width), round(0.1*height))
-        self.analyze.move(round(0.79*width), round(0.75*height))
+        self.analyze.move(round(0.79*width), round(0.85*height))
         self.analyze.clicked.connect(self.Analyze)
         self.analyze.setStyleSheet('background-color: lightgreen')
         self.analyze.setEnabled(False)
@@ -245,10 +285,9 @@ class QApp(QMainWindow):
     ########################################################################################################################################
     def Load_Z_Data(self):
         '''
-        file ='./data/mlfc/20220111_084114_profileZ.dat'
+        data =np.loadtxt('./data/mlfc/20220111_084114_profileZ.dat', dtype=str, delimiter = '\t')
         '''
         file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
-        
         data = np.loadtxt(file, dtype=str, delimiter='\t')
         self.labelZfile.setText(file.split('/')[-1])
         
@@ -259,6 +298,8 @@ class QApp(QMainWindow):
         self.Z_data_y = self.Z_Data
         self.ZPlot.clear()
         self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+        self.ZPlot.setLabel('bottom','channels')
+        self.ZPlot.getPlotItem().enableAutoRange()
 
         self.shawZraw.setEnabled(True)
         self.reverseZdata.setEnabled(True)
@@ -267,6 +308,9 @@ class QApp(QMainWindow):
         self.analyze.setEnabled(True)
         self.resetZplot.setEnabled(True)
         self.Zdataplot = True
+        self.left_edge.setEnabled(True)
+        self.right_edge.setEnabled(True)
+        self.manual_window.setEnabled(True)
 
 
     def Reverse_Z_Data(self):
@@ -327,6 +371,38 @@ class QApp(QMainWindow):
             self.enableZcalib.setStyleSheet('background-color: None; color: green')
         return
     
+
+    def Set_Windows_edge(self):
+        if self.analysis_window == False:
+            try:
+                left = int(self.left_edge.text())
+                right = int(self.right_edge.text())
+                if left < right:
+                    self.analysis_window = [left, right]
+                else:
+                    msg = QMessageBox()
+                    msg.setIcon(QMessageBox.Warning)
+                    msg.setText("Warning")
+                    msg.setInformativeText('Invalid windows edges')
+                    msg.exec_()
+                    return
+            
+            except:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setText("Warning")
+                msg.setInformativeText('Insert windows edges')
+                msg.exec_()
+                return
+            
+            self.manual_window.setStyleSheet('background-color: None; color: green')
+        
+        else:
+            self.analysis_window = False
+            self.manual_window.setStyleSheet('background-color: None; color: None')
+
+        return
+    
     
     def Shaw_Z_Data(self):
         self.ZPlot.clear()
@@ -359,16 +435,18 @@ class QApp(QMainWindow):
 
         # Plot
         self.ZPlot.clear()
+        self.ZPlot.setLabel('bottom','channels')
 
         # Data
         self.Z_Data = []
 
         # Variables
-        self.mlfc_enable   = False
-        self.calibZ_enable = False
-        self.isflipped     = False
-        self.Zdataplot     = False
-        self.Zfitplot      = False
+        self.mlfc_enable     = False
+        self.calibZ_enable   = False
+        self.isflipped       = False
+        self.Zdataplot       = False
+        self.Zfitplot        = False
+        self.analysis_window = False
 
         # Label
         self.labelZfile.setText('')
@@ -377,6 +455,9 @@ class QApp(QMainWindow):
         self.labelResults.setText('')
         self.enableZ.setStyleSheet('background-color: None; color: None')
         self.enableZcalib.setStyleSheet('background-color: None; color: None')
+        self.manual_window.setStyleSheet('background-color: None; color: None')
+        self.left_edge.setText('')
+        self.right_edge.setText('')
 
         # button
         self.shawZraw.setEnabled(False)
@@ -387,6 +468,9 @@ class QApp(QMainWindow):
         self.enableZcalib.setEnabled(False)
         self.analyze.setEnabled(False)
         self.resetZplot.setEnabled(False)
+        self.left_edge.setEnabled(False)
+        self.right_edge.setEnabled(False)
+        self.manual_window.setEnabled(False)
         
         return
     
@@ -395,22 +479,46 @@ class QApp(QMainWindow):
         # MLFC Analysis
         if self.mlfc_enable:
 
-            self.Zres = functions.mlfc_analysis(self.Z_data_y)
-            self.Z_data_x = self.Zres['coordinates_raw']
-            self.Z_data_y = self.Zres['raw_data']
-            self.Z_fit_x = self.Zres['coordinates_fit']
-            self.Z_fit_y = self.Zres['fit_data']
+            try:
+                self.Zres = functions.mlfc_analysis(self.Z_data_y, self.analysis_window)
+                self.Z_data_x = self.Zres['coordinates_raw']
+                self.Z_data_y = self.Zres['raw_data']
+                self.Z_fit_x = self.Zres['coordinates_fit']
+                self.Z_fit_y = self.Zres['fit_data']
 
-            self.ZPlot.clear()
-            self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-            self.ZPlot.plot(self.Z_fit_x, self.Z_fit_y, pen = self.pen_fit)
-            self.shawZfit.setEnabled(True)
-            self.Zdataplot = True
-            self.Zfitplot = True
-            self.labelResultsZ.setText('\n\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres['peak_pos']['value'],self.Zres['peak_pos']['unit'],
-                                                                                           self.Zres['pp_ratio']['value'],self.Zres['pp_ratio']['unit'],
-                                                                                           self.Zres['cl_range']['value'],self.Zres['cl_range']['unit'],
-                                                                                           self.Zres['peak_width']['value'],self.Zres['peak_width']['unit']))
-        
+                self.ZPlot.clear()
+                self.ZPlot.setLabel('bottom','depth [cm w.e.]')
+                self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+                self.ZPlot.plot(self.Z_fit_x, self.Z_fit_y, pen = self.pen_fit)
+                self.ZPlot.getPlotItem().enableAutoRange()
+                self.shawZfit.setEnabled(True)
+                self.Zdataplot = True
+                self.Zfitplot = True
+                self.labelResultsZ.setText('\n\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres['peak_pos']['value'],self.Zres['peak_pos']['unit'],
+                                                                                            self.Zres['pp_ratio']['value'],self.Zres['pp_ratio']['unit'],
+                                                                                            self.Zres['cl_range']['value'],self.Zres['cl_range']['unit'],
+                                                                                            self.Zres['peak_width']['value'],self.Zres['peak_width']['unit']))
+            except:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Critical)
+                msg.setText("Warning")
+                msg.setInformativeText('Analysis ended with error - see terminal output for further details')
+                msg.exec_()
+                
+
+            if self.analysis_window == False:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Information)
+                msg.setText("Results")
+                msg.setInformativeText('Suggested results shawn.\nIf you want to change the analysis, select the window')
+                msg.exec_()
+                
+
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Warning)
+            msg.setText("Warning")
+            msg.setInformativeText('Nothing to analyze:\nload files and press enable button')
+            msg.exec_()
         
         return
