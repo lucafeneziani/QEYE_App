@@ -4,5 +4,6 @@ import sys
 
 app = QApplication(sys.argv)
 win = QApp()
+
 win.show()
 sys.exit(app.exec_())

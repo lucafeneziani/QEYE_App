@@ -133,6 +133,7 @@ def mlfc_analysis(data_array, manual=False):
     bort_norm = [el * (peak_val/peak_mean) for el in bort_fin]
 
     results = {
+        "windows_range":[stop_a,stop_b],
         "peak_pos":{"value":float(peak_pos), "unit":"mm w.e."},
         "pp_ratio":{"value":float(peak_plt_ratio),"unit":" "},
         "cl_range":{"value":float(cl_range),"unit":"mm w.e."},
