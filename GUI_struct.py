@@ -30,8 +30,6 @@ class QApp(QMainWindow):
         self.bortfeld_enable = False
         self.calibZ_enable   = False
         self.isflipped       = False
-        self.Zdataplot       = False
-        self.Zfitplot        = False
         self.analysis_window = False
 
         #########################################################################
@@ -281,23 +279,23 @@ class QApp(QMainWindow):
         #########################################################################
 
         
-
+    
     ########################################################################################################################################
     def Load_Z_Data(self):
-        '''
+        
         data =np.loadtxt('./data/mlfc/20220111_084114_profileZ.dat', dtype=str, delimiter = '\t')
         '''
         file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
         data = np.loadtxt(file, dtype=str, delimiter='\t')
         self.labelZfile.setText(file.split('/')[-1])
-        
+        '''
         self.Z_Time = data[-1][0].astype(float)
         self.Z_Data = data[-1][1::].astype(float)*-1
 
         self.Z_data_x = range(len(self.Z_Data))
         self.Z_data_y = self.Z_Data
         self.ZPlot.clear()
-        self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+        self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
         self.ZPlot.setLabel('bottom','channels')
         self.ZPlot.getPlotItem().enableAutoRange()
 
@@ -307,7 +305,6 @@ class QApp(QMainWindow):
         self.loadZcalib.setEnabled(True)
         self.analyze.setEnabled(True)
         self.resetZplot.setEnabled(True)
-        self.Zdataplot = True
         self.left_edge.setEnabled(True)
         self.right_edge.setEnabled(True)
         self.manual_window.setEnabled(True)
@@ -320,12 +317,9 @@ class QApp(QMainWindow):
         else:
             self.isflipped = True
 
-        self.ZPlot.clear()
-        self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+        self.ZPlot.removeItem(self.Zraw)
+        self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
 
-        self.Zdataplot = True
-        if self.Zfitplot:
-            self.ZPlot.plot(self.Z_fit_x, self.Z_fit_y, pen = self.pen_fit)
         return
     
     def Enable_Z(self):
@@ -359,14 +353,14 @@ class QApp(QMainWindow):
 
         if self.calibZ_enable:
             self.Z_data_y = self.Z_data_y / self.calibZ_vector
-            self.ZPlot.clear()
-            self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+            self.ZPlot.removeItem(self.Zraw)
+            self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
             self.calibZ_enable = False
             self.enableZcalib.setStyleSheet('background-color: None; color: None')
         else:
             self.Z_data_y = self.Z_data_y * self.calibZ_vector
-            self.ZPlot.clear()
-            self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+            self.ZPlot.removeItem(self.Zraw)
+            self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
             self.calibZ_enable = True
             self.enableZcalib.setStyleSheet('background-color: None; color: green')
         return
@@ -403,31 +397,20 @@ class QApp(QMainWindow):
 
         return
     
-    
+
     def Shaw_Z_Data(self):
-        self.ZPlot.clear()
-        if self.Zdataplot:
-            self.Zdataplot = False
-            if self.Zfitplot:
-                self.ZPlot.plot(self.Z_fit_x, self.Z_fit_y, pen = self.pen_fit)
+        if self.Zraw.isVisible():
+            self.Zraw.hide()
         else:
-            self.Zdataplot = True
-            self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-            if self.Zfitplot:
-                self.ZPlot.plot(self.Z_fit_x, self.Z_fit_y, pen = self.pen_fit)
+            self.Zraw.show()
         return
     
+    
     def Shaw_Z_Fit(self):
-        self.ZPlot.clear()
-        if self.Zfitplot:
-            self.Zfitplot = False
-            if self.Zdataplot:
-                self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+        if self.Zfit.isVisible():
+            self.Zfit.hide()
         else:
-            self.Zfitplot = True
-            if self.Zdataplot:
-                self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-            self.ZPlot.plot(self.Z_fit_x, self.Z_fit_y, pen = self.pen_fit)
+            self.Zfit.show()
         return
     
     
@@ -444,8 +427,6 @@ class QApp(QMainWindow):
         self.mlfc_enable     = False
         self.calibZ_enable   = False
         self.isflipped       = False
-        self.Zdataplot       = False
-        self.Zfitplot        = False
         self.analysis_window = False
 
         # Label
@@ -486,14 +467,12 @@ class QApp(QMainWindow):
                 self.Z_fit_x = self.Zres['coordinates_fit']
                 self.Z_fit_y = self.Zres['fit_data']
 
-                self.ZPlot.clear()
                 self.ZPlot.setLabel('bottom','depth [cm w.e.]')
-                self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-                self.ZPlot.plot(self.Z_fit_x, self.Z_fit_y, pen = self.pen_fit)
+                self.ZPlot.clear()
+                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+                self.Zfit = self.ZPlot.plot(self.Z_fit_x, self.Z_fit_y, pen = self.pen_fit)
                 self.ZPlot.getPlotItem().enableAutoRange()
                 self.shawZfit.setEnabled(True)
-                self.Zdataplot = True
-                self.Zfitplot = True
                 self.labelResultsZ.setText('\n\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres['peak_pos']['value'],self.Zres['peak_pos']['unit'],
                                                                                             self.Zres['pp_ratio']['value'],self.Zres['pp_ratio']['unit'],
                                                                                             self.Zres['cl_range']['value'],self.Zres['cl_range']['unit'],
