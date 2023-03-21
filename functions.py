@@ -5,26 +5,23 @@ from constants import *
 import scipy.special as spspec
 import math
 
-def mlfc_analysis(data_array, manual=False):
+def mlfc_analysis(data_array, manual_window_def=False):
 
     filter_dim = 7            # optimal = 7
-    negative_signal='yes'     # yes or no
-    threshold_percent = 0.03  #
+    negative_signal='no'      # negative signal removal: yes or no
+    threshold_percent = 0.05  #
     window_add = 0            # both side of the peak
 
-    # FILES DIRECTORY
-
     
-    # BORFELD CURVES 
-    
+    # BORFELD CURVES
     file_bortfeld  = "/Users/lucafeneziani/Desktop/QEye_App/bortfeld_curves_mlfc.py" #Bortfeld theoretical curves
     with open(file_bortfeld) as bor_file: #create bortfeld curve matrix (one per ch)
         lines = bor_file.readlines()
 
 
     channels = len(data_array)  # number of acquisition channels
-    x_coord = np.arange(1, channels+1)
-    x_coord_we = (np.arange(1, channels+1)*TO_WE).tolist() # coordinates of channels converted to water equivalent thickness
+    x_coord = np.arange(channels)
+    x_coord_we = ((x_coord+1)*TO_WE).tolist() # coordinates of channels converted to water equivalent thickness
     # signal inversion (from negative to positive signal)
     # data_array = [elem*(-1) for elem in data_array]
     # smoothing
@@ -36,6 +33,7 @@ def mlfc_analysis(data_array, manual=False):
     # finding maximum
     peak_val = max(signal)
     peak_pos = np.argmax(signal)
+    
     # BIAS REMOVAL
     lim_sx = peak_pos-50
     if lim_sx < 0: 
@@ -43,22 +41,24 @@ def mlfc_analysis(data_array, manual=False):
     lim_dx = peak_pos+50
     if lim_dx > channels-1:
         lim_dx = channels-1
-    bias_ch = x_coord_we[0:lim_sx]+x_coord_we[lim_dx:channels+1]
-    bias_signal = signal[0:lim_sx]+signal[lim_dx:channels+1]
+    bias_ch = np.concatenate((x_coord[0:lim_sx],x_coord[lim_dx:channels+1]))
+    bias_signal = np.concatenate((signal[0:lim_sx],signal[lim_dx:channels+1]))
     popt_lin = curve_fit(Lin,bias_ch,bias_signal)[0]
     bias = []
     for i in range(channels):
         bias.append(Lin(i,popt_lin[0],popt_lin[1]))
     for i in range(channels):
         signal[i] -= bias[i]
-        if signal[i] < 0:
-            signal[i] = 0
+        #if signal[i] < 0:
+        #    signal[i] = 0
     # new maximum
     peak_val = max(signal)
-    print('Peak channel: ',peak_pos)
-    print('Peak value: ',peak_val)
+    peak_pos = np.argmax(signal)
+    
+    #print('Peak channel: ',peak_pos)
+    #print('Peak value: ',peak_val)
 
-    if manual == False:
+    if manual_window_def == False:
         # ANALYSIS WINDOW DEFINITION (ROI for convolution):
         threshold = peak_val*threshold_percent
         stop_a = peak_pos#limits initialized to the peak
@@ -66,7 +66,7 @@ def mlfc_analysis(data_array, manual=False):
         while signal[stop_a]>threshold:#limit set to the window left border
             stop_a -= 1
             if stop_a == 0:#no values below THR
-                print('lower bound not found: too low threshold')
+                #print('lower bound not found: too low threshold')
                 break
         stop_a -= window_add #adding chs on the left if needed
         if stop_a<0:#max limit at 0
@@ -74,7 +74,7 @@ def mlfc_analysis(data_array, manual=False):
         while signal[stop_b]>threshold:#limit set to the window right border
             stop_b += 1
             if stop_b == channels-1:#no values below THR
-                print('upper bound not found: too low threshold')
+                #print('upper bound not found: too low threshold')
                 break
         stop_b += window_add #adding chs on the right if needed
         if stop_b>channels-1:#max limit at last channel
@@ -83,58 +83,54 @@ def mlfc_analysis(data_array, manual=False):
 
     else:
         # MANUAL WINDOWS DEFINITION
-        if 0 < manual[0] < channels:
-            stop_a = manual[0]
+        if 0 < manual_window_def[0] < channels:
+            stop_a = manual_window_def[0]
         else:
             stop_a = 0
 
-        if 0 < manual[1] < channels:
-            stop_b = manual[1]
+        if 0 < manual_window_def[1] < channels:
+            stop_b = manual_window_def[1]
         else:
             stop_b = channels - 1
         
 
     print('window = ({},{})'.format(stop_a,stop_b))
-
+    
     # RECONSTRUCTION WITH BORTFELD CURVES:
-    memory = []
-    bort_fin = []
-    for i in np.arange(DEPTHMIN,DEPTHMAX,STEP):
-        memory.append(0)
-        bort_fin.append(0)
+    memory = np.zeros(channels)
+    bort_fin = np.zeros(channels)
+
     for R in range(stop_a,stop_b,1):
-        bortfeld = []
         line = lines[R]
         vect = line.split("\t")
         vect.remove('\n')
         for i in range(channels):
-            bortfeld.append(float(vect[i])*signal[R])
-        for i in range(channels):
-            bort_fin[i]=memory[i]+bortfeld[i]
+            bort_val = float(vect[i])*signal[R]
+            bort_fin[i]=memory[i]+bort_val
         memory = bort_fin
 
     # CALCULATE PARAMETERS ----------------------------------------------------------------------------------------------------------------------------------------
     bort_peak_pos = np.argmax(bort_fin)
-    pos_sides = calc_sides(bort_fin, x_coord, 0.9)
-    peak_sides = calc_sides(bort_fin, x_coord_we, 0.9)
+    pos_sides = calc_sides(bort_fin, x_coord, CLINICAL_RANGE_PERC)
+    peak_sides = calc_sides(bort_fin, x_coord_we, CLINICAL_RANGE_PERC)
     peak_width = (peak_sides[1]-peak_sides[0])
-    plt_mean = np.mean(bort_fin[:5])
+    plt_mean = np.mean(bort_fin[:10])
     peak_mean = np.mean(bort_fin[math.ceil(pos_sides[0]):math.floor(pos_sides[1])])
-    print("Peak size indeces {} - {} ".format(math.ceil(pos_sides[0]), math.floor(pos_sides[1])))
-    print("Peak in the region {} - {} mm".format(peak_sides[0], peak_sides[1]))
-    print("Peak width at 90 % is {} mm".format(peak_width))
-    print("Peak position afer treatement is {} mm".format(bort_peak_pos)) 
-    cl_range = find_cl_range(bort_fin, x_coord_we, bort_peak_pos, 0.9)
-    print("CLinical range is {} mm".format(cl_range))
+    #print("Peak size indeces {} - {} ".format(math.ceil(pos_sides[0]), math.floor(pos_sides[1])))
+    #print("Peak in the region {} - {} mm".format(peak_sides[0], peak_sides[1]))
+    #print("Peak width at 90 % is {} mm".format(peak_width))
+    #print("Peak position afer treatement is {} mm".format(bort_peak_pos)) 
+    cl_range = find_cl_range(bort_fin, x_coord_we, bort_peak_pos, CLINICAL_RANGE_PERC)
+    #print("CLinical range is {} mm".format(cl_range))
     peak_plt_ratio = peak_mean/plt_mean # peak to plateau ratio
     rawcoord_list = x_coord_we
     rawdata_list = data_array
     coord_list = x_coord_we
     bort_norm = [el * (peak_val/peak_mean) for el in bort_fin]
-
+    
     results = {
         "windows_range":[stop_a,stop_b],
-        "peak_pos":{"value":float(peak_pos), "unit":"mm w.e."},
+        "peak_pos":{"value":float(peak_pos*TO_WE*10), "unit":"mm w.e."},
         "pp_ratio":{"value":float(peak_plt_ratio),"unit":" "},
         "cl_range":{"value":float(cl_range),"unit":"mm w.e."},
         "peak_width":{"value":float(peak_width),"unit":"mm w.e."},

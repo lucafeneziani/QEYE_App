@@ -2,6 +2,9 @@
 # useful constants for the analysis procedures
 #----------------------------------------------------------------------------------------
 
+# CLINICLAL RANGES
+CLINICAL_RANGE_PERC = 0.8
+
 #CONSTANT FOR DEPTH-DOSE PROFILE FITTING
 BRAGG_GAMMA_FUNC = 1.565 # no unit - gamma function value (Bortfeld model)
 #BRAGG_ALPHA = 0.0022 #cm*MeV^{-p} in water

@@ -7,7 +7,7 @@ import os
 
 import functions
 import configuration_params
-from constants import TO_WE
+from constants import TO_WE, CLINICAL_RANGE_PERC
 
 
 ########################################################################################################################################
@@ -140,27 +140,27 @@ class QApp(QMainWindow):
         self.labelResultsZt = QLabel(self)
         self.labelResultsZt.move(round(0.37*width), round(0.65*height))
         self.labelResultsZt.resize(round(0.3*width), round(0.07*height))
-        self.labelResultsZt.setText('\t  Analysis results\nautomatic:\t\tmanual:')
+        self.labelResultsZt.setText('\t  Analysis results\nautomatic:\t\t  manual:')
         self.labelResultsZt.setFont(textstyle2)
         self.labelResultsZt.setStyleSheet('background-color: None')
         #
         self.labelResultsZt = QLabel(self)
         self.labelResultsZt.move(round(0.2*width), round(0.65*height))
         self.labelResultsZt.resize(round(0.16*width), round(0.25*height))
-        self.labelResultsZt.setText('\n\n\nWindow\'s range:\n\nPeak position:\n\nPeak-plateau ratio:\n\nClinical range (R80):\n\nPeak width (@80%):')
+        self.labelResultsZt.setText('\n\n\nWindow\'s range:\n\nPeak position:\n\nPeak-plateau ratio:\n\nClinical range (R{:d}):\n\nPeak width (@{:d}%):'.format(int(CLINICAL_RANGE_PERC*100), int(CLINICAL_RANGE_PERC*100)))
         self.labelResultsZt.setFont(textstyle)
         self.labelResultsZt.setStyleSheet('background-color: None')
         #
         self.labelResultsZ = QLabel(self)
-        self.labelResultsZ.move(round(0.37*width), round(0.65*height))
-        self.labelResultsZ.resize(round(0.10*width), round(0.25*height))
+        self.labelResultsZ.move(round(0.35*width), round(0.65*height))
+        self.labelResultsZ.resize(round(0.12*width), round(0.25*height))
         self.labelResultsZ.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.labelResultsZ.setFont(textstyle)
         self.labelResultsZ.setStyleSheet('background-color: None')
         #
         self.labelResultsZm = QLabel(self)
         self.labelResultsZm.move(round(0.51*width), round(0.65*height))
-        self.labelResultsZm.resize(round(0.10*width), round(0.25*height))
+        self.labelResultsZm.resize(round(0.12*width), round(0.25*height))
         self.labelResultsZm.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.labelResultsZm.setFont(textstyle)
         self.labelResultsZm.setStyleSheet('background-color: None')
@@ -348,35 +348,54 @@ class QApp(QMainWindow):
 
     def Load_Z_Calibration(self):
 
-        file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
-        data = np.loadtxt(file, dtype=str, delimiter = '\t')
-        self.labelZcalib.setText(file.split('/')[-1])
+        try:
+            file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
+            data = np.loadtxt(file, dtype=str, delimiter = '\t')
+            self.labelZcalib.setText(file.split('/')[-1])
 
-        self.calibZ_vector_orig = np.transpose(data)[1][1::].astype(float)
-        self.calibZ_vector_flip = np.flip(self.calibZ_vector_orig)
+            self.calibZ_vector_orig = np.transpose(data)[1][1::].astype(float)
+            self.calibZ_vector_flip = np.flip(self.calibZ_vector_orig)
 
-        self.enableZcalib.setEnabled(True)
+            self.enableZcalib.setEnabled(True)
+
+        except:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Warning")
+            msg.setInformativeText('Unrecognized data format - Check the upload')
+            msg.exec_()
+        
         return
    
 
     def Apply_Z_Calib(self):
-        if self.isflipped:
-            self.calibZ_vector = self.calibZ_vector_flip
-        else:
-            self.calibZ_vector = self.calibZ_vector_orig
 
-        if self.calibZ_enable:
-            self.Z_data_y = self.Z_data_y / self.calibZ_vector
-            self.ZPlot.removeItem(self.Zraw)
-            self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-            self.calibZ_enable = False
-            self.enableZcalib.setStyleSheet('background-color: None; color: None')
-        else:
-            self.Z_data_y = self.Z_data_y * self.calibZ_vector
-            self.ZPlot.removeItem(self.Zraw)
-            self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-            self.calibZ_enable = True
-            self.enableZcalib.setStyleSheet('background-color: None; color: green')
+        try:
+            if self.isflipped:
+                self.calibZ_vector = self.calibZ_vector_flip
+            else:
+                self.calibZ_vector = self.calibZ_vector_orig
+
+            if self.calibZ_enable:
+                self.Z_data_y = self.Z_data_y / self.calibZ_vector
+                self.ZPlot.removeItem(self.Zraw)
+                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+                self.calibZ_enable = False
+                self.enableZcalib.setStyleSheet('background-color: None; color: None')
+            else:
+                self.Z_data_y = self.Z_data_y * self.calibZ_vector
+                self.ZPlot.removeItem(self.Zraw)
+                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+                self.calibZ_enable = True
+                self.enableZcalib.setStyleSheet('background-color: None; color: green')
+
+        except:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Warning")
+            msg.setInformativeText('Error during calibration applying')
+            msg.exec_()
+
         return
     
 
@@ -505,7 +524,7 @@ class QApp(QMainWindow):
                 self.Zraw = self.ZPlot.plot(self.Zres_auto['coordinates_raw'], self.Zres_auto['raw_data'], pen = self.pen_data)
                 self.Zfit = self.ZPlot.plot(self.Zres_auto['coordinates_fit'], self.Zres_auto['fit_data'], pen = self.pen_fit)
                 self.shawZfit.setEnabled(True)
-                self.labelResultsZ.setText('\n\n\n{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_auto['windows_range'],
+                self.labelResultsZ.setText('\n\n\n{} / [{:.2f},{:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_auto['windows_range'],self.Zres_auto['windows_range'][0]*TO_WE,self.Zres_auto['windows_range'][1]*TO_WE,
                                                                                             self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'],
                                                                                             self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'],
                                                                                             self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'],
@@ -516,7 +535,7 @@ class QApp(QMainWindow):
                     self.Zres_man = functions.mlfc_analysis(self.Z_data_y, self.analysis_window)
                     self.Zfit2 = self.ZPlot.plot(self.Zres_man['coordinates_fit'], self.Zres_man['fit_data'], pen = self.pen_fit2)
                     self.shawZfit2.setEnabled(True)
-                    self.labelResultsZm.setText('\n\n\n{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_man['windows_range'],
+                    self.labelResultsZm.setText('\n\n\n{} / [{:.2f},{:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_man['windows_range'],self.Zres_man['windows_range'][0]*TO_WE,self.Zres_man['windows_range'][1]*TO_WE,
                                                                                                 self.Zres_man['peak_pos']['value'],self.Zres_man['peak_pos']['unit'],
                                                                                                 self.Zres_man['pp_ratio']['value'],self.Zres_man['pp_ratio']['unit'],
                                                                                                 self.Zres_man['cl_range']['value'],self.Zres_man['cl_range']['unit'],
