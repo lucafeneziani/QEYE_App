@@ -5,6 +5,8 @@ from constants import *
 import scipy.special as spspec
 import math
 
+DIRECTORY = '/Users/lucafeneziani/Desktop/QEYE_App/'
+
 def mlfc_analysis(data_array, manual_window_def=False):
 
     filter_dim = 7            # optimal = 7
@@ -14,7 +16,7 @@ def mlfc_analysis(data_array, manual_window_def=False):
 
     
     # BORFELD CURVES
-    file_bortfeld  = "/Users/lucafeneziani/Desktop/QEye_App/bortfeld_curves_mlfc.py" #Bortfeld theoretical curves
+    file_bortfeld  = DIRECTORY + 'bortfeld_curves_mlfc.py' #Bortfeld theoretical curves
     with open(file_bortfeld) as bor_file: #create bortfeld curve matrix (one per ch)
         lines = bor_file.readlines()
 
