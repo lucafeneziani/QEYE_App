@@ -1,0 +1,25 @@
+TEST
+
+
+SAMPLING MODE: Continuous
+
+SAMPLING RATE: 10 Hz - 100.000000 ms
+
+FIRST CHANNEL: 0
+Z ENABLED - CALIBRATION not applied
+
+
+
+
+----------ERROR LIST----------
+
+
+11-1-2022 09:52:32  ERROR: INTERNAL ERROR: 
+no external trigger detected
+
+11-1-2022 09:52:32  ERROR: INTERNAL ERROR: 
+DAQ error
+
+
+
+

@@ -28,10 +28,8 @@ class QApp(QMainWindow):
         #########################################################################
         # ENABLE/DISABLE VARIABLES
 
-        self.mlfc_enable     = False
-        self.bortfeld_enable = False
+        self.bkg_enable      = False
         self.calibZ_enable   = False
-        self.isflipped       = False
         self.analysis_window = False
 
         #########################################################################
@@ -135,7 +133,7 @@ class QApp(QMainWindow):
 
         self.labelResults = QLabel(self)
         self.labelResults.move(round(0.02*width), round(0.65*height))
-        self.labelResults.resize(round(0.75*width), round(0.25*height))
+        self.labelResults.resize(round(0.75*width), round(0.3*height))
         self.labelResults.setStyleSheet('background-color: None; border: 2px solid blue; border-radius: 10px')
         
         # Profile Z
@@ -148,22 +146,22 @@ class QApp(QMainWindow):
         #
         self.labelResultsZt = QLabel(self)
         self.labelResultsZt.move(round(0.2*width), round(0.65*height))
-        self.labelResultsZt.resize(round(0.16*width), round(0.25*height))
-        self.labelResultsZt.setText('\n\n\nWindow\'s range:\n\nPeak position:\n\nPeak-plateau ratio:\n\nClinical range (R{:d}):\n\nPeak width (@{:d}%):'.format(int(CLINICAL_RANGE_PERC*100), int(CLINICAL_RANGE_PERC*100)))
+        self.labelResultsZt.resize(round(0.16*width), round(0.3*height))
+        self.labelResultsZt.setText('\n\n\nWindow\'s range [ch]:\n\nWindow\'s range [mm w.e.]:\n\nPeak position:\n\nPeak-plateau ratio:\n\nClinical range (R{:d}):\n\nPeak width (@{:d}%):'.format(int(CLINICAL_RANGE_PERC*100), int(CLINICAL_RANGE_PERC*100)))
         self.labelResultsZt.setFont(textstyle)
         self.labelResultsZt.setStyleSheet('background-color: None')
         #
         self.labelResultsZ = QLabel(self)
         self.labelResultsZ.move(round(0.35*width), round(0.65*height))
-        self.labelResultsZ.resize(round(0.12*width), round(0.25*height))
-        self.labelResultsZ.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResultsZ.resize(round(0.12*width), round(0.3*height))
+        self.labelResultsZ.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.labelResultsZ.setFont(textstyle)
         self.labelResultsZ.setStyleSheet('background-color: None')
         #
         self.labelResultsZm = QLabel(self)
         self.labelResultsZm.move(round(0.51*width), round(0.65*height))
-        self.labelResultsZm.resize(round(0.12*width), round(0.25*height))
-        self.labelResultsZm.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResultsZm.resize(round(0.12*width), round(0.3*height))
+        self.labelResultsZm.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.labelResultsZm.setFont(textstyle)
         self.labelResultsZm.setStyleSheet('background-color: None')
         
@@ -192,27 +190,40 @@ class QApp(QMainWindow):
         self.labelZfile.move(round(0.845*width), round(0.2*height))
         self.labelZfile.setStyleSheet('background-color: lightgray; border: None')
 
-        # Z File reverse button
-        self.reverseZdata = QPushButton(self)
-        self.reverseZdata.setText("Reverse Z Data")
-        self.reverseZdata.resize(round(0.2*width), round(0.05*height))
-        self.reverseZdata.move(round(0.79*width), round(0.25*height))
-        self.reverseZdata.clicked.connect(self.Reverse_Z_Data)
-        self.reverseZdata.setStyleSheet(button_style)
-        self.reverseZdata.setEnabled(False)
+        # Background load button
+        self.loadbkg = QPushButton(self)
+        self.loadbkg.setText("Load Background")
+        self.loadbkg.resize(round(0.2*width), round(0.05*height))
+        self.loadbkg.move(round(0.79*width), round(0.25*height))
+        self.loadbkg.clicked.connect(self.Load_Background)
+        self.loadbkg.setStyleSheet(button_style)
+        self.loadbkg.setEnabled(False)
 
-        # Enable Z switch button
-        self.enableZ = QPushButton(self)
-        self.enableZ.setText("Enable Z")
-        self.enableZ.resize(round(0.1*width), round(0.05*height))
-        self.enableZ.move(round(0.79*width), round(0.3*height))
-        self.enableZ.clicked.connect(self.Enable_Z)
-        self.enableZ.setStyleSheet(enable_style)
-        self.enableZ.setEnabled(False)
+        # Background label
+        self.labelbkg = QLabel(self) 
+        self.labelbkg.setText("BKG file:")  
+        self.labelbkg.resize(round(0.045*width), round(0.03*height))
+        self.labelbkg.move(round(0.8*width), round(0.3*height))
+        self.labelbkg.setStyleSheet('border: 1px solid gray; border: None')
+        #
+        self.labelbkg = QLabel(self) 
+        self.labelbkg.setText('')
+        self.labelbkg.resize(round(0.135*width), round(0.03*height))
+        self.labelbkg.move(round(0.845*width), round(0.3*height))
+        self.labelbkg.setStyleSheet('background-color: lightgray; None')
+
+        # Remove Background button
+        self.removebkg = QPushButton(self)
+        self.removebkg.setText("Remove BKG from data")
+        self.removebkg.resize(round(0.2*width), round(0.05*height))
+        self.removebkg.move(round(0.79*width), round(0.33*height))
+        self.removebkg.clicked.connect(self.Remove_Background)
+        self.removebkg.setStyleSheet(enable_style)
+        self.removebkg.setEnabled(False)
 
         # Z Calibration load button
         self.loadZcalib = QPushButton(self)
-        self.loadZcalib.setText("Load Z Calib")
+        self.loadZcalib.setText("Load Z Calibration file")
         self.loadZcalib.resize(round(0.2*width), round(0.05*height))
         self.loadZcalib.move(round(0.79*width), round(0.37*height))
         self.loadZcalib.clicked.connect(self.Load_Z_Calibration)
@@ -311,12 +322,11 @@ class QApp(QMainWindow):
             self.ZPlot.getPlotItem().enableAutoRange()
 
             self.shawZraw.setEnabled(True)
-            self.reverseZdata.setEnabled(True)
-            self.enableZ.setEnabled(True)
             self.loadZcalib.setEnabled(True)
             self.analyze.setEnabled(True)
             self.resetZplot.setEnabled(True)
             self.manualbutton.setEnabled(True)
+            self.loadbkg.setEnabled(True)
         
         except:
             msg = QMessageBox()
@@ -325,38 +335,85 @@ class QApp(QMainWindow):
             msg.setInformativeText('Unrecognized data format - Check the upload')
             msg.exec_()
 
+        return
 
-    def Reverse_Z_Data(self):
-        self.Z_data_y = np.flip(self.Z_data_y)
-        if self.isflipped:
-            self.isflipped = False
-        else:
-            self.isflipped = True
 
-        self.ZPlot.removeItem(self.Zraw)
-        self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+    def Load_Background(self):
+
+        if self.bkg_enable:
+            self.Z_data_y = self.Z_data_y + self.BKG_Data
+            self.ZPlot.removeItem(self.Zraw)
+            self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+
+        self.labelbkg.setText('')
+        self.bkg_enable = False
+        self.removebkg.setEnabled(False)
+        self.removebkg.setStyleSheet('background-color: None; color: None')
+
+        try:
+            file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
+            data = np.loadtxt(file, dtype=str, delimiter='\t')
+            self.labelbkg.setText(file.split('/')[-1])
+            
+            self.BKG_Time = data[-1][0].astype(float)
+            self.BKG_Data = data[-1][1::].astype(float) * -1 / self.BKG_Time * self.Z_Time
+
+            self.removebkg.setEnabled(True)
+
+        except:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Warning")
+            msg.setInformativeText('Unrecognized data format - Check the upload')
+            msg.exec_()
 
         return
     
-    def Enable_Z(self):
-        if self.mlfc_enable:
-            self.mlfc_enable = False
-            self.enableZ.setStyleSheet('background-color: None; color: None')
-        else:
-            self.mlfc_enable = True
-            self.enableZ.setStyleSheet('background-color: None; color: green')
+
+    def Remove_Background(self):
+
+        try:
+            if self.bkg_enable:
+                self.Z_data_y = self.Z_data_y + self.BKG_Data
+                self.ZPlot.removeItem(self.Zraw)
+                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+                self.bkg_enable = False
+                self.removebkg.setStyleSheet('background-color: None; color: None')
+            else:
+                self.Z_data_y = self.Z_data_y - self.BKG_Data
+                self.ZPlot.removeItem(self.Zraw)
+                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+                self.bkg_enable = True
+                self.removebkg.setStyleSheet('background-color: None; color: green')
+
+        except:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Warning")
+            msg.setInformativeText('Error during background removal')
+            msg.exec_()
+
         return
 
 
     def Load_Z_Calibration(self):
+
+        if self.calibZ_enable:
+            self.Z_data_y = self.Z_data_y / self.calibZ_vector
+            self.ZPlot.removeItem(self.Zraw)
+            self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+
+        self.labelZcalib.setText('')
+        self.calibZ_enable = False
+        self.enableZcalib.setEnabled(False)
+        self.enableZcalib.setStyleSheet('background-color: None; color: None')
 
         try:
             file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
             data = np.loadtxt(file, dtype=str, delimiter = '\t')
             self.labelZcalib.setText(file.split('/')[-1])
 
-            self.calibZ_vector_orig = np.transpose(data)[1][1::].astype(float)
-            self.calibZ_vector_flip = np.flip(self.calibZ_vector_orig)
+            self.calibZ_vector = np.transpose(data)[1][1::].astype(float)
 
             self.enableZcalib.setEnabled(True)
 
@@ -373,11 +430,6 @@ class QApp(QMainWindow):
     def Apply_Z_Calib(self):
 
         try:
-            if self.isflipped:
-                self.calibZ_vector = self.calibZ_vector_flip
-            else:
-                self.calibZ_vector = self.calibZ_vector_orig
-
             if self.calibZ_enable:
                 self.Z_data_y = self.Z_data_y / self.calibZ_vector
                 self.ZPlot.removeItem(self.Zraw)
@@ -405,13 +457,17 @@ class QApp(QMainWindow):
         self.ZPlot.clear()
 
         self.Z_data_x = range(len(self.Z_Data))
-        self.Z_data_y = self.Z_Data
 
         self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
         self.ZPlot.setLabel('bottom','channels')
         self.ZPlot.getPlotItem().enableAutoRange()
+
         self.leftline = pg.InfiniteLine(pos=self.Z_data_x[0], pen=self.pen_roi, angle=90, movable=True)
+        self.leftlinelabel = pg.InfLineLabel(self.leftline, text=str(self.leftline.value()), position=0.95)
         self.rightline = pg.InfiniteLine(pos=self.Z_data_x[-1], pen=self.pen_roi, angle=90, movable=True)
+        self.rightlinelabel = pg.InfLineLabel(self.rightline, text=str(self.rightline.value()), position=0.9)
+        self.leftline.sigPositionChanged.connect(self.Update_label)
+        self.rightline.sigPositionChanged.connect(self.Update_label)
         
         self.ZPlot.addItem(self.leftline)
         self.ZPlot.addItem(self.rightline)
@@ -425,6 +481,13 @@ class QApp(QMainWindow):
         
         return
 
+    def Update_label(self):
+        self.leftlinelabel.setText(str(int(self.leftline.value())))
+        self.rightlinelabel.setText(str(int(self.rightline.value())))
+        self.analysis_window = False
+        self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
+        self.manual_window.setStyleSheet('background-color: None; color: None')
+        return
 
     def Set_Windows_edge(self):
         
@@ -481,18 +544,18 @@ class QApp(QMainWindow):
         self.Z_Data = []
 
         # Variables
-        self.mlfc_enable     = False
+        self.bkg_enable      = False
         self.calibZ_enable   = False
-        self.isflipped       = False
         self.analysis_window = False
 
         # Label
         self.labelZfile.setText('')
+        self.labelbkg.setText('')
         self.labelZcalib.setText('')
-        self.labelResultsZ.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--')
-        self.labelResultsZm.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResultsZ.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResultsZm.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.labelResults.setText('')
-        self.enableZ.setStyleSheet('background-color: None; color: None')
+        self.removebkg.setStyleSheet('background-color: None; color: None')
         self.enableZcalib.setStyleSheet('background-color: None; color: None')
         self.manual_window.setStyleSheet('background-color: None; color: None')
         self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
@@ -501,8 +564,8 @@ class QApp(QMainWindow):
         self.shawZraw.setEnabled(False)
         self.shawZfit.setEnabled(False)
         self.shawZfit2.setEnabled(False)
-        self.reverseZdata.setEnabled(False)
-        self.enableZ.setEnabled(False)
+        self.loadbkg.setEnabled(False)
+        self.removebkg.setEnabled(False)
         self.loadZcalib.setEnabled(False)
         self.enableZcalib.setEnabled(False)
         self.analyze.setEnabled(False)
@@ -515,58 +578,49 @@ class QApp(QMainWindow):
     def Analyze(self):
 
         # MLFC Analysis
-        if self.mlfc_enable:
-
-            try:
-                self.Zres_auto = functions.mlfc_analysis(self.Z_data_y, False)
-                
-                self.ZPlot.clear()
-                self.ZPlot.setLabel('bottom','depth [cm w.e.]')
-
-                self.Zraw = self.ZPlot.plot(self.Zres_auto['coordinates_raw'], self.Zres_auto['raw_data'], pen = self.pen_data)
-                self.Zfit = self.ZPlot.plot(self.Zres_auto['coordinates_fit'], self.Zres_auto['fit_data'], pen = self.pen_fit)
-                self.shawZfit.setEnabled(True)
-                self.labelResultsZ.setText('\n\n\n{} / [{:.2f},{:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_auto['windows_range'],self.Zres_auto['windows_range'][0]*TO_WE,self.Zres_auto['windows_range'][1]*TO_WE,
-                                                                                            self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'],
-                                                                                            self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'],
-                                                                                            self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'],
-                                                                                            self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit']))
+        try:
+            self.Zres_auto = functions.mlfc_analysis(self.Z_data_y, False)
             
+            self.ZPlot.clear()
+            self.ZPlot.setLabel('bottom','depth [mm w.e.]')
 
-                if self.analysis_window != False:
-                    self.Zres_man = functions.mlfc_analysis(self.Z_data_y, self.analysis_window)
-                    self.Zfit2 = self.ZPlot.plot(self.Zres_man['coordinates_fit'], self.Zres_man['fit_data'], pen = self.pen_fit2)
-                    self.shawZfit2.setEnabled(True)
-                    self.labelResultsZm.setText('\n\n\n{} / [{:.2f},{:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_man['windows_range'],self.Zres_man['windows_range'][0]*TO_WE,self.Zres_man['windows_range'][1]*TO_WE,
-                                                                                                self.Zres_man['peak_pos']['value'],self.Zres_man['peak_pos']['unit'],
-                                                                                                self.Zres_man['pp_ratio']['value'],self.Zres_man['pp_ratio']['unit'],
-                                                                                                self.Zres_man['cl_range']['value'],self.Zres_man['cl_range']['unit'],
-                                                                                                self.Zres_man['peak_width']['value'],self.Zres_man['peak_width']['unit']))
-            
-                self.ZPlot.getPlotItem().enableAutoRange()
-            
-            except:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Critical)
-                msg.setText("Warning")
-                msg.setInformativeText('Analysis ended with error - see terminal output for further details')
-                msg.exec_()
-                
-
-            if self.analysis_window == False:
-                msg = QMessageBox()
-                msg.setIcon(QMessageBox.Information)
-                msg.setText("Results")
-                msg.setInformativeText('Suggested results shawn.\nIf you want to change the analysis, select the window')
-                msg.exec_()
-                
-
-        else:
+            self.Zraw = self.ZPlot.plot(self.Zres_auto['coordinates_raw'], self.Zres_auto['raw_data'], pen = self.pen_data)
+            self.Zfit = self.ZPlot.plot(self.Zres_auto['coordinates_fit'], self.Zres_auto['fit_data'], pen = self.pen_fit)
+            self.shawZfit.setEnabled(True)
+            self.labelResultsZ.setText('\n\n\n{}\n\n[{:.2f},{:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_auto['windows_range'],
+                                                                                                                                    self.Zres_auto['windows_range'][0]*TO_WE,self.Zres_auto['windows_range'][1]*TO_WE,
+                                                                                                                                    self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'],
+                                                                                                                                    self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'],
+                                                                                                                                    self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'],
+                                                                                                                                    self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit']))
+        
+            if self.analysis_window != False:
+                self.Zres_man = functions.mlfc_analysis(self.Z_data_y, self.analysis_window)
+                self.Zfit2 = self.ZPlot.plot(self.Zres_man['coordinates_fit'], self.Zres_man['fit_data'], pen = self.pen_fit2)
+                self.shawZfit2.setEnabled(True)
+                self.labelResultsZm.setText('\n\n\n{}\n\n[{:.2f},{:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_man['windows_range'],
+                                                                                                                                            self.Zres_man['windows_range'][0]*TO_WE,self.Zres_man['windows_range'][1]*TO_WE,
+                                                                                                                                            self.Zres_man['peak_pos']['value'],self.Zres_man['peak_pos']['unit'],
+                                                                                                                                            self.Zres_man['pp_ratio']['value'],self.Zres_man['pp_ratio']['unit'],
+                                                                                                                                            self.Zres_man['cl_range']['value'],self.Zres_man['cl_range']['unit'],
+                                                                                                                                            self.Zres_man['peak_width']['value'],self.Zres_man['peak_width']['unit']))
+        
+            self.ZPlot.getPlotItem().enableAutoRange()
+        
+        except:
             msg = QMessageBox()
-            msg.setIcon(QMessageBox.Warning)
+            msg.setIcon(QMessageBox.Critical)
             msg.setText("Warning")
-            msg.setInformativeText('Nothing to analyze:\nload files and press enable button')
+            msg.setInformativeText('Analysis ended with error')
             msg.exec_()
+            
+        if self.analysis_window == False:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Results")
+            msg.setInformativeText('Suggested results shawn.\nIf you want to change the analysis parameters, set the window\'s edges')
+            msg.exec_()
+                
         
         self.manual_window.setEnabled(False)
 

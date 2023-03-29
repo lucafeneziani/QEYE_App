@@ -96,7 +96,7 @@ def mlfc_analysis(data_array, manual_window_def=False):
             stop_b = channels - 1
         
 
-    print('window = ({},{})'.format(stop_a,stop_b))
+    #print('window = ({},{})'.format(stop_a,stop_b))
     
     # RECONSTRUCTION WITH BORTFELD CURVES:
     memory = np.zeros(channels)
@@ -132,7 +132,7 @@ def mlfc_analysis(data_array, manual_window_def=False):
     
     results = {
         "windows_range":[stop_a,stop_b],
-        "peak_pos":{"value":float(peak_pos*TO_WE*10), "unit":"mm w.e."},
+        "peak_pos":{"value":float(peak_pos*TO_WE), "unit":"mm w.e."},
         "pp_ratio":{"value":float(peak_plt_ratio),"unit":" "},
         "cl_range":{"value":float(cl_range),"unit":"mm w.e."},
         "peak_width":{"value":float(peak_width),"unit":"mm w.e."},
@@ -161,7 +161,7 @@ def calc_sides(x, y, value):
     half_max = value*max_val
     left_half = 0
     right_half = 0
-    for cnt in range(0, max_index):
+    for cnt in range(1, max_index):
        val = x[cnt]
        if(val >= half_max):
            w1 = np.abs(value - val/max_val)
