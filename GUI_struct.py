@@ -103,7 +103,6 @@ class QApp(QMainWindow):
         self.logolabel = QLabel(self)
         self.pixmap = QPixmap(DIRECTORY + 'images/DeTecTor.png')
         self.pixmap = self.pixmap.scaledToHeight(round(0.05*height),Qt.SmoothTransformation)
-        #self.pixmap = self.pixmap.scaled(round(0.25*width), round(0.1*height),Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.logolabel.setPixmap(self.pixmap)
         self.logolabel.resize(round(0.27*width), round(0.085*height))
         self.logolabel.move(round(0.72*width), round(0.0*height))
@@ -113,7 +112,6 @@ class QApp(QMainWindow):
         self.logolabel = QLabel(self)
         self.pixmap = QPixmap(DIRECTORY + 'images/detectors/logo_QEYE.png')
         self.pixmap = self.pixmap.scaledToHeight(round(0.045*height),Qt.SmoothTransformation)
-        #self.pixmap = self.pixmap.scaled(round(0.12*width), round(0.1*height),Qt.KeepAspectRatio,Qt.SmoothTransformation)
         self.logolabel.setPixmap(self.pixmap)
         self.logolabel.resize(round(0.27*width), round(0.085*height))
         self.logolabel.move(round(0.05*width), round(0.0*height))
@@ -129,7 +127,8 @@ class QApp(QMainWindow):
         self.ZPlot.setTitle('Profile Z total counts')
         self.ZPlot.resize(round(0.65*width), round(0.45*height))
         self.ZPlot.move(round(0.02*width), round(0.12*height))
-        self.ZPlot.setBackground('w')
+        self.ZPlot.setBackground('white')
+        self.ZPlot.showGrid(x=True, y=True, alpha=0.4)
 
         # Shaw Z Raw Data button
         self.shawZraw = QPushButton(self)
@@ -444,10 +443,12 @@ class QApp(QMainWindow):
                 self.Z_data_y = self.Z_data_y - self.BKG_Data
                 self.ZPlot.removeItem(self.Zraw)
                 self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+                self.removebkg.setText("BKG removed from data")
             else:
                 self.Z_data_y = self.Z_data_y + self.BKG_Data
                 self.ZPlot.removeItem(self.Zraw)
                 self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+                self.removebkg.setText("Remove BKG from data")
 
         except:
             msg = QMessageBox()
@@ -631,6 +632,7 @@ class QApp(QMainWindow):
         self.labelResultsZ.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.labelResultsZm.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
+        self.removebkg.setText("Remove BKG from data")
         
         return
     
@@ -641,7 +643,7 @@ class QApp(QMainWindow):
             self.Zres_auto = functions.mlfc_analysis(self.Z_data_y, False)
             
             self.ZPlot.clear()
-            self.ZPlot.setLabel('bottom','depth [mm w.e.]')
+            self.ZPlot.setLabel('bottom','depth','mm w.e.')
             self.labelResultsZm.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--')
 
             self.Zraw = self.ZPlot.plot(self.Zres_auto['coordinates_raw'], self.Zres_auto['raw_data'], pen = self.pen_data)
