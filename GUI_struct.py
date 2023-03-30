@@ -26,17 +26,19 @@ class QApp(QMainWindow):
         self.setStyleSheet('background: whitesmoke')
 
         #########################################################################
-        # ENABLE/DISABLE VARIABLES
-
-        self.bkg_enable      = False
-        self.calibZ_enable   = False
-        self.analysis_window = False
-
-        #########################################################################
         # GUI STYLE
         
-        button_style = 'background-color: None'
-        enable_style = 'background-color: None'
+        self.button_style = 'QPushButton:enabled{color: black; \
+                                                background-color: white; \
+                                                border: 1px solid gray; \
+                                                border-radius: 3px; \
+                                                border-style: outset} \
+                             QPushButton:disabled{color: gray; \
+                                                background-color: lightgray} \
+                             QPushButton:pressed{background-color: None; \
+                                                border-style: inset} \
+                             QPushButton:checked{background-color: lightgreen}'
+        
         textstyle = QFont()
         textstyle.setBold(True)
         textstyle2 = QFont(None,15)
@@ -47,8 +49,13 @@ class QApp(QMainWindow):
         self.pen_roi = pg.mkPen(color=(50,50,50), width=1)
 
         #########################################################################
-        # CONFIGURATION PARAMS
+        # VARIABLES
 
+        self.analysis_window = False
+
+        #########################################################################
+        # CONFIGURATION PARAMS
+        
         self.detector_params  = configuration_params.configs
 
         #########################################################################
@@ -98,7 +105,7 @@ class QApp(QMainWindow):
         self.shawZraw.resize(round(0.07*width), round(0.05*height))
         self.shawZraw.move(round(0.67*width), round(0.15*height))
         self.shawZraw.clicked.connect(self.Shaw_Z_Data)
-        self.shawZraw.setStyleSheet(button_style)
+        self.shawZraw.setStyleSheet(self.button_style)
         self.shawZraw.setEnabled(False)
 
         # Shaw Z Analyzed Data button
@@ -107,7 +114,7 @@ class QApp(QMainWindow):
         self.shawZfit.resize(round(0.07*width), round(0.05*height))
         self.shawZfit.move(round(0.67*width), round(0.20*height))
         self.shawZfit.clicked.connect(self.Shaw_Z_Fit)
-        self.shawZfit.setStyleSheet(button_style)
+        self.shawZfit.setStyleSheet(self.button_style)
         self.shawZfit.setEnabled(False)
         #
         self.shawZfit2 = QPushButton(self)
@@ -115,7 +122,7 @@ class QApp(QMainWindow):
         self.shawZfit2.resize(round(0.07*width), round(0.05*height))
         self.shawZfit2.move(round(0.67*width), round(0.25*height))
         self.shawZfit2.clicked.connect(self.Shaw_Z_Fit2)
-        self.shawZfit2.setStyleSheet(button_style)
+        self.shawZfit2.setStyleSheet(self.button_style)
         self.shawZfit2.setEnabled(False)
 
         # Reset Z Plot button
@@ -124,7 +131,7 @@ class QApp(QMainWindow):
         self.resetZplot.resize(round(0.07*width), round(0.05*height))
         self.resetZplot.move(round(0.67*width), round(0.55*height))
         self.resetZplot.clicked.connect(lambda: self.ZPlot.getPlotItem().enableAutoRange())
-        self.resetZplot.setStyleSheet(button_style)
+        self.resetZplot.setStyleSheet(self.button_style)
         self.resetZplot.setEnabled(False)
 
         
@@ -175,8 +182,8 @@ class QApp(QMainWindow):
         self.loadZdata.resize(round(0.2*width), round(0.05*height))
         self.loadZdata.move(round(0.79*width), round(0.15*height))
         self.loadZdata.clicked.connect(self.Load_Z_Data)
-        self.loadZdata.setStyleSheet(button_style)
-
+        self.loadZdata.setStyleSheet(self.button_style)
+        
         # Z File label
         self.labelZfile = QLabel(self) 
         self.labelZfile.setText("File IN Z:")
@@ -196,7 +203,7 @@ class QApp(QMainWindow):
         self.loadbkg.resize(round(0.2*width), round(0.05*height))
         self.loadbkg.move(round(0.79*width), round(0.25*height))
         self.loadbkg.clicked.connect(self.Load_Background)
-        self.loadbkg.setStyleSheet(button_style)
+        self.loadbkg.setStyleSheet(self.button_style)
         self.loadbkg.setEnabled(False)
 
         # Background label
@@ -214,11 +221,12 @@ class QApp(QMainWindow):
 
         # Remove Background button
         self.removebkg = QPushButton(self)
+        self.removebkg.setCheckable(True)
         self.removebkg.setText("Remove BKG from data")
         self.removebkg.resize(round(0.2*width), round(0.05*height))
         self.removebkg.move(round(0.79*width), round(0.33*height))
         self.removebkg.clicked.connect(self.Remove_Background)
-        self.removebkg.setStyleSheet(enable_style)
+        self.removebkg.setStyleSheet(self.button_style)
         self.removebkg.setEnabled(False)
 
         # Z Calibration load button
@@ -227,7 +235,7 @@ class QApp(QMainWindow):
         self.loadZcalib.resize(round(0.2*width), round(0.05*height))
         self.loadZcalib.move(round(0.79*width), round(0.37*height))
         self.loadZcalib.clicked.connect(self.Load_Z_Calibration)
-        self.loadZcalib.setStyleSheet(button_style)
+        self.loadZcalib.setStyleSheet(self.button_style)
         self.loadZcalib.setEnabled(False)
 
         # Z Calib label 
@@ -245,11 +253,12 @@ class QApp(QMainWindow):
 
         # Enable Z Calib switch button
         self.enableZcalib = QPushButton(self)
+        self.enableZcalib.setCheckable(True)
         self.enableZcalib.setText("Apply calib Z")
         self.enableZcalib.resize(round(0.1*width), round(0.05*height))
         self.enableZcalib.move(round(0.79*width), round(0.45*height))
         self.enableZcalib.clicked.connect(self.Apply_Z_Calib)
-        self.enableZcalib.setStyleSheet(enable_style)
+        self.enableZcalib.setStyleSheet(self.button_style)
         self.enableZcalib.setEnabled(False)
 
         # Manual choose button
@@ -258,7 +267,7 @@ class QApp(QMainWindow):
         self.manualbutton.resize(round(0.2*width), round(0.05*height))
         self.manualbutton.move(round(0.79*width), round(0.55*height))
         self.manualbutton.clicked.connect(self.ManualWindow)
-        self.manualbutton.setStyleSheet(enable_style)
+        self.manualbutton.setStyleSheet(self.button_style)
         self.manualbutton.setEnabled(False)
 
         # Windows edges label
@@ -270,10 +279,12 @@ class QApp(QMainWindow):
 
         # Manual window button
         self.manual_window = QPushButton(self)
+        self.manual_window.setCheckable(True)
         self.manual_window.setText("Set window's edges")
-        self.manual_window.resize(round(0.2*width), round(0.03*height))
+        self.manual_window.resize(round(0.2*width), round(0.05*height))
         self.manual_window.move(round(0.79*width), round(0.68*height))
         self.manual_window.clicked.connect(self.Set_Windows_edge)
+        self.manual_window.setStyleSheet(self.button_style)
         self.manual_window.setEnabled(False)
 
         # Reset All button
@@ -304,13 +315,13 @@ class QApp(QMainWindow):
         self.Reset_all()
         
         try:
-            '''
-            data =np.loadtxt('./data/mlfc/20220111_084114_profileZ.dat', dtype=str, delimiter = '\t')
+            
+            data =np.loadtxt('/Users/lucafeneziani/Desktop/QEYE_App/data/mlfc/Clatter - modificati e funzionanti/20220929_135127_profileZ.dat', dtype=str, delimiter = '\t')
             '''
             file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
             data = np.loadtxt(file, dtype=str, delimiter='\t')
             self.labelZfile.setText(file.split('/')[-1])
-            
+            '''
             self.Z_Time = data[-1][0].astype(float)
             self.Z_Data = data[-1][1::].astype(float)*-1
 
@@ -340,15 +351,14 @@ class QApp(QMainWindow):
 
     def Load_Background(self):
 
-        if self.bkg_enable:
+        if self.removebkg.isChecked():
             self.Z_data_y = self.Z_data_y + self.BKG_Data
             self.ZPlot.removeItem(self.Zraw)
             self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+            self.removebkg.setChecked(False)
 
         self.labelbkg.setText('')
-        self.bkg_enable = False
         self.removebkg.setEnabled(False)
-        self.removebkg.setStyleSheet('background-color: None; color: None')
 
         try:
             file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
@@ -373,18 +383,14 @@ class QApp(QMainWindow):
     def Remove_Background(self):
 
         try:
-            if self.bkg_enable:
-                self.Z_data_y = self.Z_data_y + self.BKG_Data
-                self.ZPlot.removeItem(self.Zraw)
-                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-                self.bkg_enable = False
-                self.removebkg.setStyleSheet('background-color: None; color: None')
-            else:
+            if self.removebkg.isChecked():
                 self.Z_data_y = self.Z_data_y - self.BKG_Data
                 self.ZPlot.removeItem(self.Zraw)
                 self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-                self.bkg_enable = True
-                self.removebkg.setStyleSheet('background-color: None; color: green')
+            else:
+                self.Z_data_y = self.Z_data_y + self.BKG_Data
+                self.ZPlot.removeItem(self.Zraw)
+                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
 
         except:
             msg = QMessageBox()
@@ -398,15 +404,14 @@ class QApp(QMainWindow):
 
     def Load_Z_Calibration(self):
 
-        if self.calibZ_enable:
+        if self.enableZcalib.isChecked():
             self.Z_data_y = self.Z_data_y / self.calibZ_vector
             self.ZPlot.removeItem(self.Zraw)
             self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+            self.enableZcalib.setChecked(False)
 
         self.labelZcalib.setText('')
-        self.calibZ_enable = False
         self.enableZcalib.setEnabled(False)
-        self.enableZcalib.setStyleSheet('background-color: None; color: None')
 
         try:
             file = QFileDialog.getOpenFileName(self, os.getcwd())[0]
@@ -425,23 +430,19 @@ class QApp(QMainWindow):
             msg.exec_()
         
         return
-   
+
 
     def Apply_Z_Calib(self):
 
         try:
-            if self.calibZ_enable:
-                self.Z_data_y = self.Z_data_y / self.calibZ_vector
-                self.ZPlot.removeItem(self.Zraw)
-                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-                self.calibZ_enable = False
-                self.enableZcalib.setStyleSheet('background-color: None; color: None')
-            else:
+            if self.enableZcalib.isChecked():
                 self.Z_data_y = self.Z_data_y * self.calibZ_vector
                 self.ZPlot.removeItem(self.Zraw)
                 self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-                self.calibZ_enable = True
-                self.enableZcalib.setStyleSheet('background-color: None; color: green')
+            else:
+                self.Z_data_y = self.Z_data_y / self.calibZ_vector
+                self.ZPlot.removeItem(self.Zraw)
+                self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
 
         except:
             msg = QMessageBox()
@@ -473,25 +474,23 @@ class QApp(QMainWindow):
         self.ZPlot.addItem(self.rightline)
 
         self.manual_window.setEnabled(True)
-        self.manual_window.setStyleSheet('background-color: None; color: None')
         self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
         self.shawZfit.setEnabled(False)
         self.shawZfit2.setEnabled(False)
-        self.analysis_window = False
+        self.manual_window.setChecked(False)
         
         return
 
     def Update_label(self):
         self.leftlinelabel.setText(str(int(self.leftline.value())))
         self.rightlinelabel.setText(str(int(self.rightline.value())))
-        self.analysis_window = False
+        self.manual_window.setChecked(False)
         self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
-        self.manual_window.setStyleSheet('background-color: None; color: None')
         return
 
     def Set_Windows_edge(self):
         
-        if self.analysis_window == False:
+        if self.manual_window.isChecked():
             
             line1 = int(self.leftline.value())
             line2 = int(self.rightline.value())
@@ -500,13 +499,10 @@ class QApp(QMainWindow):
             self.leftlabel.setText('left edge:\t{} ch\t{:.2f} mm w.e.\nright edge:\t{} ch\t{:.2f} mm w.e.'.format(left,left*TO_WE,right,right*TO_WE))
         
             self.analysis_window = [left, right]
-            
-            self.manual_window.setStyleSheet('background-color: None; color: green')
         
         else:
             self.analysis_window = False
             self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
-            self.manual_window.setStyleSheet('background-color: None; color: None')
 
         return
     
@@ -544,21 +540,10 @@ class QApp(QMainWindow):
         self.Z_Data = []
 
         # Variables
-        self.bkg_enable      = False
-        self.calibZ_enable   = False
+        self.removebkg.setChecked(False)
+        self.manual_window.setChecked(False)
+        self.enableZcalib.setChecked(False)
         self.analysis_window = False
-
-        # Label
-        self.labelZfile.setText('')
-        self.labelbkg.setText('')
-        self.labelZcalib.setText('')
-        self.labelResultsZ.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
-        self.labelResultsZm.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
-        self.labelResults.setText('')
-        self.removebkg.setStyleSheet('background-color: None; color: None')
-        self.enableZcalib.setStyleSheet('background-color: None; color: None')
-        self.manual_window.setStyleSheet('background-color: None; color: None')
-        self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
 
         # button
         self.shawZraw.setEnabled(False)
@@ -572,6 +557,15 @@ class QApp(QMainWindow):
         self.resetZplot.setEnabled(False)
         self.manualbutton.setEnabled(False)
         self.manual_window.setEnabled(False)
+
+        # Label
+        self.labelZfile.setText('')
+        self.labelbkg.setText('')
+        self.labelZcalib.setText('')
+        self.labelResultsZ.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResultsZm.setText('\n\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResults.setText('')
+        self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
         
         return
     
