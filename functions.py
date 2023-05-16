@@ -5,7 +5,7 @@ from constants import *
 import scipy.special as spspec
 import math
 
-DIRECTORY = '/Users/lucafeneziani/Desktop/QEYE_App/'
+DIRECTORY = '/Users/lucafeneziani/Desktop/QEYE/QEYE_App/'
 
 def mlfc_analysis(data_array, manual_window_def=False):
 

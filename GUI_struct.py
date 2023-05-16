@@ -9,7 +9,7 @@ import functions
 import configuration_params
 from constants import TO_WE, CLINICAL_RANGE_PERC
 
-DIRECTORY = '/Users/lucafeneziani/Desktop/QEYE_App/'
+DIRECTORY = '/Users/lucafeneziani/Desktop/QEYE/QEYE_App/'
 
 ########################################################################################################################################
 
