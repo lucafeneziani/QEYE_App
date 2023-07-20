@@ -7,10 +7,10 @@ import math
 
 DIRECTORY = '/Users/lucafeneziani/Desktop/QEYE/QEYE_App/'
 
-def mlfc_analysis(data_array, manual_window_def=False):
+def mlfc_analysis(data_array, manual_window_def=False, equivalence = TO_WE):
 
     filter_dim = 7            # optimal = 7
-    negative_signal='no'      # negative signal removal: yes or no
+    negative_signal = 'no'    # negative signal removal: yes or no
     threshold_percent = 0.05  #
     window_add = 0            # both side of the peak
 
@@ -23,7 +23,7 @@ def mlfc_analysis(data_array, manual_window_def=False):
 
     channels = len(data_array)  # number of acquisition channels
     x_coord = np.arange(channels)
-    x_coord_we = ((x_coord+1)*TO_WE).tolist() # coordinates of channels converted to water equivalent thickness
+    x_coord_we = ((x_coord+1)*equivalence).tolist() # coordinates of channels converted to water equivalent thickness
     # signal inversion (from negative to positive signal)
     # data_array = [elem*(-1) for elem in data_array]
     # smoothing
@@ -113,8 +113,8 @@ def mlfc_analysis(data_array, manual_window_def=False):
 
     # CALCULATE PARAMETERS ----------------------------------------------------------------------------------------------------------------------------------------
     bort_peak_pos = np.argmax(bort_fin)
-    pos_sides = calc_sides(bort_fin, x_coord, CLINICAL_RANGE_PERC)
-    peak_sides = calc_sides(bort_fin, x_coord_we, CLINICAL_RANGE_PERC)
+    pos_sides = calc_sides(bort_fin, x_coord, PEAK_WIDTH_PERC)
+    peak_sides = calc_sides(bort_fin, x_coord_we, PEAK_WIDTH_PERC)
     peak_width = (peak_sides[1]-peak_sides[0])
     plt_mean = np.mean(bort_fin[:10])
     peak_mean = np.mean(bort_fin[math.ceil(pos_sides[0]):math.floor(pos_sides[1])])
@@ -130,16 +130,26 @@ def mlfc_analysis(data_array, manual_window_def=False):
     coord_list = x_coord_we
     bort_norm = [el * (peak_val/peak_mean) for el in bort_fin]
     
+
+    # Normalization
+    rawdata_max = np.mean(np.sort(rawdata_list)[-10::])
+    rawdata_list = rawdata_list/rawdata_max*100
+    bort_max = np.mean(np.sort(bort_norm)[-10::])
+    bort_norm = bort_norm/bort_max*100
+    
+    entrance_dose = np.mean(bort_norm[0:10])
+    
     results = {
         "windows_range":[stop_a,stop_b],
-        "peak_pos":{"value":float(peak_pos*TO_WE), "unit":"mm w.e."},
+        "peak_pos":{"value":float(peak_pos*equivalence), "unit":"mm"},
         "pp_ratio":{"value":float(peak_plt_ratio),"unit":" "},
-        "cl_range":{"value":float(cl_range),"unit":"mm w.e."},
-        "peak_width":{"value":float(peak_width),"unit":"mm w.e."},
+        "cl_range":{"value":float(cl_range),"unit":"mm"},
+        "peak_width":{"value":float(peak_width),"unit":"mm"},
         "coordinates_raw":rawcoord_list,
         "raw_data":rawdata_list,
         "coordinates_fit": coord_list,
         "fit_data": bort_norm,
+        "entrance_dose":{"value":float(entrance_dose), "unit":"%"},
     }
 
     return results

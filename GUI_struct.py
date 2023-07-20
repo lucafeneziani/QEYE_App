@@ -1,13 +1,14 @@
 import numpy as np
 from PyQt5.QtGui import QPixmap, QFont
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QPushButton, QLabel, QFileDialog, QMessageBox
+from PyQt5.QtWidgets import QMainWindow, QDesktopWidget, QPushButton, QLabel, QFileDialog, QMessageBox, QLineEdit
 import pyqtgraph as pg
 import os
+import datetime
 
 import functions
 import configuration_params
-from constants import TO_WE, CLINICAL_RANGE_PERC
+from constants import TO_WE, TO_EYETISSUE, TO_PERSPEX, CLINICAL_RANGE_PERC, PEAK_WIDTH_PERC
 
 DIRECTORY = '/Users/lucafeneziani/Desktop/QEYE/QEYE_App/'
 
@@ -82,6 +83,7 @@ class QApp(QMainWindow):
         # VARIABLES
 
         self.analysis_window = False
+        self.to_equivalence = TO_WE
 
         #########################################################################
         # CONFIGURATION PARAMS
@@ -172,37 +174,101 @@ class QApp(QMainWindow):
         # Rectangle line
         self.lines = QLabel(self)
         self.lines.move(round(0.02*width), round(0.63*height))
-        self.lines.resize(round(0.65*width), round(0.3*height))
+        self.lines.resize(round(0.725*width), round(0.3*height))
+        self.lines.setStyleSheet(self.line_style)
+
+        # Equivalence buttons
+        self.to_we = QPushButton(self)
+        self.to_we.setCheckable(True)
+        self.to_we.setChecked(True)
+        self.to_we.setText("Water")
+        self.to_we.resize(round(0.075*width), round(0.04*height))
+        self.to_we.move(round(0.04*width), round(0.7*height))
+        self.to_we.clicked.connect(self.Change_Equivalence_we)
+        self.to_we.setStyleSheet(self.button_style)
+        self.to_we.setEnabled(True)
+        #
+        self.to_eyetissue = QPushButton(self)
+        self.to_eyetissue.setCheckable(True)
+        self.to_eyetissue.setText("Eye tissue")
+        self.to_eyetissue.resize(round(0.075*width), round(0.04*height))
+        self.to_eyetissue.move(round(0.04*width), round(0.75*height))
+        self.to_eyetissue.clicked.connect(self.Change_Equivalence_eyetissue)
+        self.to_eyetissue.setStyleSheet(self.button_style)
+        self.to_eyetissue.setEnabled(True)
+        #
+        self.to_perspex = QPushButton(self)
+        self.to_perspex.setCheckable(True)
+        self.to_perspex.setText("Perspex")
+        self.to_perspex.resize(round(0.075*width), round(0.04*height))
+        self.to_perspex.move(round(0.04*width), round(0.8*height))
+        self.to_perspex.clicked.connect(self.Change_Equivalence_perspex)
+        self.to_perspex.setStyleSheet(self.button_style)
+        self.to_perspex.setEnabled(True)
+
+        # line
+        self.lines = QLabel(self)
+        self.lines.move(round(0.14*width), round(0.67*height))
+        self.lines.resize(round(0.002*width), round(0.24*height))
         self.lines.setStyleSheet(self.line_style)
         
         # Profile Z
         self.labelResultsZt = QLabel(self)
         self.labelResultsZt.move(round(0.3*width), round(0.6*height))
         self.labelResultsZt.resize(round(0.4*width), round(0.08*height))
-        self.labelResultsZt.setText('Analysis results\n\n\tautomatic:\t\t  manual:')
+        self.labelResultsZt.setText('Analysis results\n\n\tautomatic:\t\t  selected:')
         self.labelResultsZt.setFont(textstyle2)
         self.labelResultsZt.setStyleSheet('background-color: None')
         #
         self.labelResultsZt = QLabel(self)
-        self.labelResultsZt.move(round(0.14*width), round(0.65*height))
+        self.labelResultsZt.move(round(0.16*width), round(0.65*height))
         self.labelResultsZt.resize(round(0.16*width), round(0.3*height))
-        self.labelResultsZt.setText('Window\'s range [ch]:\n\nWindow\'s range [mm w.e.]:\n\nPeak position:\n\nPeak-plateau ratio:\n\nClinical range (R{:d}):\n\nPeak width (@{:d}%):'.format(int(CLINICAL_RANGE_PERC*100), int(CLINICAL_RANGE_PERC*100)))
+        self.labelResultsZt.setText('Window\'s range [ch]:\n\nWindow\'s range [equivalent mm]:\n\nPeak position:\n\nPeak-plateau ratio:\n\nClinical range (R{:d}):\n\nPeak width (@{:d}%):\n\nEntrance dose:'.format(int(CLINICAL_RANGE_PERC*100), int(PEAK_WIDTH_PERC*100)))
         self.labelResultsZt.setFont(textstyle)
         self.labelResultsZt.setStyleSheet('background-color: None')
         #
         self.labelResultsZ = QLabel(self)
-        self.labelResultsZ.move(round(0.35*width), round(0.65*height))
+        self.labelResultsZ.move(round(0.37*width), round(0.65*height))
         self.labelResultsZ.resize(round(0.12*width), round(0.3*height))
-        self.labelResultsZ.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResultsZ.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.labelResultsZ.setFont(textstyle)
         self.labelResultsZ.setStyleSheet('background-color: None')
         #
         self.labelResultsZm = QLabel(self)
-        self.labelResultsZm.move(round(0.49*width), round(0.65*height))
+        self.labelResultsZm.move(round(0.51*width), round(0.65*height))
         self.labelResultsZm.resize(round(0.12*width), round(0.3*height))
-        self.labelResultsZm.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResultsZm.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
         self.labelResultsZm.setFont(textstyle)
         self.labelResultsZm.setStyleSheet('background-color: None')
+
+        # line
+        self.lines = QLabel(self)
+        self.lines.move(round(0.6*width), round(0.67*height))
+        self.lines.resize(round(0.002*width), round(0.24*height))
+        self.lines.setStyleSheet(self.line_style)
+
+        # label
+        self.label = QLabel(self) 
+        self.label.setText("Insert file name:")
+        self.label.move(round(0.635*width), round(0.72*height))
+        self.label.resize(round(0.1*width), round(0.04*height))
+        self.label.setStyleSheet('border: 1px solid gray; border: None')
+
+        # textbox nome file
+        self.textbox = QLineEdit(self)
+        self.textbox.move(round(0.61*width), round(0.75*height))
+        self.textbox.resize(round(0.125*width), round(0.04*height))
+        self.textbox.setStyleSheet('background-color: white')
+        self.textbox.setEnabled(False)
+
+        # Save button
+        self.savebutton = QPushButton(self)
+        self.savebutton.setText("Save")
+        self.savebutton.move(round(0.63*width), round(0.83*height))
+        self.savebutton.resize(round(0.075*width), round(0.04*height))
+        self.savebutton.clicked.connect(self.Savefile)
+        self.savebutton.setStyleSheet(self.button_style)
+        self.savebutton.setEnabled(False)
         
 
         #########################################################################
@@ -322,7 +388,7 @@ class QApp(QMainWindow):
 
         # Windows edges label
         self.leftlabel = QLabel(self) 
-        self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
+        self.leftlabel.setText('left edge:\t0 ch\t0 eq. mm\nright edge:\t0 ch\t0 eq. mm')
         self.leftlabel.resize(round(0.2*width), round(0.05*height))
         self.leftlabel.move(round(0.79*width), round(0.65*height))
         self.leftlabel.setStyleSheet('border: None')
@@ -383,9 +449,7 @@ class QApp(QMainWindow):
 
             self.Z_data_x = range(len(self.Z_Data))
             self.Z_data_y = self.Z_Data
-            self.ZPlot.clear()
             self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
-            self.ZPlot.setLabel('bottom','channels')
             self.ZPlot.getPlotItem().enableAutoRange()
 
             self.shawZraw.setEnabled(True)
@@ -518,7 +582,9 @@ class QApp(QMainWindow):
         self.Z_data_x = range(len(self.Z_Data))
 
         self.Zraw = self.ZPlot.plot(self.Z_data_x, self.Z_data_y, pen = self.pen_data)
+        self.ZPlot.setTitle('Profile Z total counts')
         self.ZPlot.setLabel('bottom','channels')
+        self.ZPlot.setLabel('left','counts')
         self.ZPlot.getPlotItem().enableAutoRange()
 
         self.leftline = pg.InfiniteLine(pos=self.Z_data_x[0], pen=self.pen_roi, angle=90, movable=True)
@@ -532,7 +598,7 @@ class QApp(QMainWindow):
         self.ZPlot.addItem(self.rightline)
 
         self.manual_window.setEnabled(True)
-        self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
+        self.leftlabel.setText('left edge:\t0 ch\t0 eq. mm\nright edge:\t0 ch\t0 eq. mm')
         self.shawZfit.setEnabled(False)
         self.shawZfit2.setEnabled(False)
         self.manual_window.setChecked(False)
@@ -543,7 +609,7 @@ class QApp(QMainWindow):
         self.leftlinelabel.setText(str(int(self.leftline.value())))
         self.rightlinelabel.setText(str(int(self.rightline.value())))
         self.manual_window.setChecked(False)
-        self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
+        self.leftlabel.setText('left edge:\t0 ch\t0 eq. mm\nright edge:\t0 ch\t0 eq. mm')
         return
 
     def Set_Windows_edge(self):
@@ -554,13 +620,13 @@ class QApp(QMainWindow):
             line2 = int(self.rightline.value())
             left = min(line1,line2)
             right = max(line1,line2)
-            self.leftlabel.setText('left edge:\t{} ch\t{:.2f} mm w.e.\nright edge:\t{} ch\t{:.2f} mm w.e.'.format(left,left*TO_WE,right,right*TO_WE))
+            self.leftlabel.setText('left edge:\t{} ch\t{:.2f} eq. mm\nright edge:\t{} ch\t{:.2f} eq. mm'.format(left,left*self.to_equivalence,right,right*self.to_equivalence))
         
             self.analysis_window = [left, right]
         
         else:
             self.analysis_window = False
-            self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
+            self.leftlabel.setText('left edge:\t0 ch\t0 eq. mm\nright edge:\t0 ch\t0 eq. mm')
 
         return
     
@@ -594,16 +660,99 @@ class QApp(QMainWindow):
         return
     
     
+    def Change_Equivalence_we(self):
+        self.to_we.setChecked(True)
+        self.to_eyetissue.setChecked(False)
+        self.to_perspex.setChecked(False)
+        self.to_equivalence = TO_WE
+        self.Analyze()
+        return
+    
+
+    def Change_Equivalence_eyetissue(self):
+        self.to_we.setChecked(False)
+        self.to_eyetissue.setChecked(True)
+        self.to_perspex.setChecked(False)
+        self.to_equivalence = TO_EYETISSUE
+        self.Analyze()
+        return
+    
+
+    def Change_Equivalence_perspex(self):
+        self.to_we.setChecked(False)
+        self.to_eyetissue.setChecked(False)
+        self.to_perspex.setChecked(True)
+        self.to_equivalence = TO_PERSPEX
+        self.Analyze()
+        return
+    
+    def Savefile(self):
+        self.savebutton.setEnabled(False)
+        self.textbox.setEnabled(False)
+
+        now = datetime.datetime.now()
+        date = now.strftime('%Y%m%d')
+        hour = now.strftime('%H%M%S')
+        name = self.textbox.text()
+        path = QFileDialog.getExistingDirectory(self, os.getcwd())
+        filename = path+'/'+date+'_'+hour+'_'+name+'.txt'
+        
+        if self.to_we.isChecked():
+            eq = 'Water'
+        elif self.to_eyetissue.isChecked():
+            eq = 'Eye tissue'
+        elif self.to_perspex.isChecked():
+            eq = 'Perspex'
+
+        f = open(filename, 'w')
+        if self.analysis_window != False:
+            f.write('Depth dose profile, {} equivalent length\tAutomatic Fit\tSelected range Fit'.format(eq))
+            f.write('\nWindow\'s range [ch]:\t[{}, {}]\t[{}, {}]\nWindow\'s range [mm]:\t[{:.2f}, {:.2f}]\t[{}, {}]\nPeak position:\t{:.2f} {}\t{:.2f} {}\nPeak-plateau ratio:\t{:.2f} {}\t{:.2f} {}\nClinical range (R{:d}):\t{:.2f} {}\t{:.2f} {}\nPeak width (@{:d}%):\t{:.2f} {}\t{:.2f} {}\nEntrance dose:\t{:.2f} {}\t{:.2f} {}'.format(
+                            self.Zres_auto['windows_range'][0],self.Zres_auto['windows_range'][1], self.Zres_man['windows_range'][0],self.Zres_man['windows_range'][1],
+                            self.Zres_auto['windows_range'][0]*self.to_equivalence,self.Zres_auto['windows_range'][1]*self.to_equivalence, self.Zres_man['windows_range'][0]*self.to_equivalence,self.Zres_man['windows_range'][1]*self.to_equivalence,
+                            self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'], self.Zres_man['peak_pos']['value'],self.Zres_man['peak_pos']['unit'],
+                            self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'], self.Zres_man['pp_ratio']['value'],self.Zres_man['pp_ratio']['unit'],
+                            int(CLINICAL_RANGE_PERC*100),self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'], self.Zres_man['cl_range']['value'],self.Zres_man['cl_range']['unit'],
+                            int(PEAK_WIDTH_PERC*100),self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit'], self.Zres_man['peak_width']['value'],self.Zres_man['peak_width']['unit'],
+                            self.Zres_auto['entrance_dose']['value'],self.Zres_auto['entrance_dose']['unit'], self.Zres_man['entrance_dose']['value'],self.Zres_man['entrance_dose']['unit'],
+                            ))
+            f.write('\n\n{} equivalent length\tAutomatic Fit\tSelected range Fit'.format(eq))
+            for i in range(len(self.Zres_auto['coordinates_raw'])):
+                f.write('\n{:.2f}\t{:.2f}\t{:.2f}'.format(self.Zres_auto['coordinates_raw'][i], self.Zres_auto['fit_data'][i], self.Zres_man['fit_data'][i]))
+        else:
+            f.write('Depth dose profile, {} equivalent length\tAutomatic Fit'.format(eq))
+            f.write('\nWindow\'s range [ch]:\t[{}, {}]\nWindow\'s range [mm]:\t[{:.2f}, {:.2f}]\nPeak position:\t{:.2f} {}\nPeak-plateau ratio:\t{:.2f} {}\nClinical range (R{:d}):\t{:.2f} {}\nPeak width (@{:d}%):\t{:.2f} {}\nEntrance dose:\t{:.2f} {}'.format(
+                            self.Zres_auto['windows_range'][0], self.Zres_auto['windows_range'][1],
+                            self.Zres_auto['windows_range'][0]*self.to_equivalence,self.Zres_auto['windows_range'][1]*self.to_equivalence,
+                            self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'],
+                            self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'],
+                            int(CLINICAL_RANGE_PERC*100),self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'],
+                            int(PEAK_WIDTH_PERC*100),self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit'],
+                            self.Zres_auto['entrance_dose']['value'],self.Zres_auto['entrance_dose']['unit'],
+                            ))
+            f.write('\n\n{} equivalent length\tAutomatic Fit'.format(eq))
+            for i in range(len(self.Zres_auto['coordinates_raw'])):
+                f.write('\n{:.2f}\t{:.2f}'.format(self.Zres_auto['coordinates_raw'][i], self.Zres_auto['fit_data'][i]))
+        f.close()
+
+        return
+
+
     def Reset_all(self):
 
         # Plot
         self.ZPlot.clear()
+        self.ZPlot.setTitle('Profile Z total counts')
         self.ZPlot.setLabel('bottom','channels')
+        self.ZPlot.setLabel('left','counts')
 
         # Data
         self.Z_Data = []
 
         # Variables
+        self.to_we.setChecked(True)
+        self.to_eyetissue.setChecked(False)
+        self.to_perspex.setChecked(False)
         self.removebkg.setChecked(False)
         self.manual_window.setChecked(False)
         self.enableZcalib.setChecked(False)
@@ -621,6 +770,7 @@ class QApp(QMainWindow):
         self.resetZplot.setEnabled(False)
         self.manualbutton.setEnabled(False)
         self.manual_window.setEnabled(False)
+        self.savebutton.setEnabled(False)
 
         # Label
         self.shawZraw.setText("Hide Data")
@@ -629,10 +779,12 @@ class QApp(QMainWindow):
         self.labelZfile.setText('')
         self.labelbkg.setText('')
         self.labelZcalib.setText('')
-        self.labelResultsZ.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--')
-        self.labelResultsZm.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--')
-        self.leftlabel.setText('left edge:\t0 ch\t0 mm w.e.\nright edge:\t0 ch\t0 mm w.e.')
+        self.labelResultsZ.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.labelResultsZm.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
+        self.leftlabel.setText('left edge:\t0 ch\t0 eq. mm\nright edge:\t0 ch\t0 eq. mm')
         self.removebkg.setText("Remove BKG from data")
+        self.textbox.setText("")
+        self.textbox.setEnabled(False)
         
         return
     
@@ -640,34 +792,42 @@ class QApp(QMainWindow):
 
         # MLFC Analysis
         try:
-            self.Zres_auto = functions.mlfc_analysis(self.Z_data_y, False)
+            self.Zres_auto = functions.mlfc_analysis(self.Z_data_y, False, self.to_equivalence)
             
             self.ZPlot.clear()
-            self.ZPlot.setLabel('bottom','depth','mm w.e.')
-            self.labelResultsZm.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--')
+            self.ZPlot.setTitle('Profile Z dose')
+            self.ZPlot.setLabel('bottom','depth','equivalent mm')
+            self.ZPlot.setLabel('left','%')
+            self.labelResultsZm.setText('--\n\n--\n\n--\n\n--\n\n--\n\n--\n\n--')
 
-            self.Zraw = self.ZPlot.plot(self.Zres_auto['coordinates_raw'], self.Zres_auto['raw_data'], pen = self.pen_data)
+            self.Zraw = self.ZPlot.plot(self.Zres_auto['coordinates_raw'], self.Zres_auto['raw_data']/np.max(self.Zres_auto['raw_data'])*100, pen = self.pen_data)
             self.Zfit = self.ZPlot.plot(self.Zres_auto['coordinates_fit'], self.Zres_auto['fit_data'], pen = self.pen_fit)
             self.shawZfit.setEnabled(True)
-            self.labelResultsZ.setText('{}\n\n[{:.2f},{:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_auto['windows_range'],
-                                                                                                                                    self.Zres_auto['windows_range'][0]*TO_WE,self.Zres_auto['windows_range'][1]*TO_WE,
+            self.labelResultsZ.setText('[{}, {}]\n\n[{:.2f}, {:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_auto['windows_range'][0],self.Zres_auto['windows_range'][1],
+                                                                                                                                    self.Zres_auto['windows_range'][0]*self.to_equivalence,self.Zres_auto['windows_range'][1]*self.to_equivalence,
                                                                                                                                     self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'],
                                                                                                                                     self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'],
                                                                                                                                     self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'],
-                                                                                                                                    self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit']))
+                                                                                                                                    self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit'],
+                                                                                                                                    self.Zres_auto['entrance_dose']['value'],self.Zres_auto['entrance_dose']['unit']))
         
             if self.analysis_window != False:
-                self.Zres_man = functions.mlfc_analysis(self.Z_data_y, self.analysis_window)
+                self.Zres_man = functions.mlfc_analysis(self.Z_data_y, self.analysis_window, self.to_equivalence)
                 self.Zfit2 = self.ZPlot.plot(self.Zres_man['coordinates_fit'], self.Zres_man['fit_data'], pen = self.pen_fit2)
                 self.shawZfit2.setEnabled(True)
-                self.labelResultsZm.setText('{}\n\n[{:.2f},{:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_man['windows_range'],
-                                                                                                                                            self.Zres_man['windows_range'][0]*TO_WE,self.Zres_man['windows_range'][1]*TO_WE,
+                self.labelResultsZm.setText('[{}, {}]\n\n[{:.2f}, {:.2f}]\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}\n\n{:.2f}\t{}'.format(self.Zres_man['windows_range'][0],self.Zres_man['windows_range'][1],
+                                                                                                                                            self.Zres_man['windows_range'][0]*self.to_equivalence,self.Zres_man['windows_range'][1]*self.to_equivalence,
                                                                                                                                             self.Zres_man['peak_pos']['value'],self.Zres_man['peak_pos']['unit'],
                                                                                                                                             self.Zres_man['pp_ratio']['value'],self.Zres_man['pp_ratio']['unit'],
                                                                                                                                             self.Zres_man['cl_range']['value'],self.Zres_man['cl_range']['unit'],
-                                                                                                                                            self.Zres_man['peak_width']['value'],self.Zres_man['peak_width']['unit']))
+                                                                                                                                            self.Zres_man['peak_width']['value'],self.Zres_man['peak_width']['unit'],
+                                                                                                                                            self.Zres_man['entrance_dose']['value'],self.Zres_man['entrance_dose']['unit']))
         
             self.ZPlot.getPlotItem().enableAutoRange()
+
+            self.textbox.setText("")
+            self.textbox.setEnabled(True)
+            self.savebutton.setEnabled(True)
         
         except:
             msg = QMessageBox()

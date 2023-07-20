@@ -3,7 +3,8 @@
 #----------------------------------------------------------------------------------------
 
 # CLINICLAL RANGES
-CLINICAL_RANGE_PERC = 0.8
+CLINICAL_RANGE_PERC = 0.9
+PEAK_WIDTH_PERC = 0.5
 
 #CONSTANT FOR DEPTH-DOSE PROFILE FITTING
 BRAGG_GAMMA_FUNC = 1.565 # no unit - gamma function value (Bortfeld model)
@@ -29,6 +30,9 @@ BRAGG_EPSILON_MAX = 0.2
 TO_WE = 0.120 # mm we per channel - each ionization chamber module corresponds to xx cm WEPL
 
 #QEYE CONSTANTS:
+TO_EYETISSUE = 0.2 # invented value - waiting for real one
+TO_PERSPEX = 0.3   # invented value - waiting for real one
+
 # GENERAL
 CHANNELS = 512
 STEP = 0.00485 #cm (Cu+Kp+Cu+Py/2)
