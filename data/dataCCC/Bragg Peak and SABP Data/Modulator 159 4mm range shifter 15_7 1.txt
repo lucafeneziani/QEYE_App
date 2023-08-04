@@ -1,0 +1,17 @@
+Modulator 159 4mm range shifter 15_7 1
+
+
+SAMPLING MODE: Continuous
+
+SAMPLING RATE: 1 Hz - 1000 ms
+
+Z CALIBRATION not applied
+
+
+
+----------ERROR LIST----------
+
+
+
+
+

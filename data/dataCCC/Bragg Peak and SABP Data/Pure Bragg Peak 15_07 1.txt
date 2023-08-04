@@ -1,0 +1,17 @@
+Pure Bragg Peak 15_07 1
+
+
+SAMPLING MODE: Continuous
+
+SAMPLING RATE: 1 Hz - 1000 ms
+
+Z CALIBRATION not applied
+
+
+
+----------ERROR LIST----------
+
+
+
+
+

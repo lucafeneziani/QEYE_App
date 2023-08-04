@@ -138,6 +138,10 @@ def mlfc_analysis(data_array, manual_window_def=False, equivalence = TO_WE):
     bort_norm = bort_norm/bort_max*100
     
     entrance_dose = np.mean(bort_norm[0:10])
+
+    # Modulation
+    marker_pos, dose_at_marker = find_marker(coord_list, bort_norm, 0.7)
+    modulation = cl_range - marker_pos
     
     results = {
         "windows_range":[stop_a,stop_b],
@@ -150,9 +154,27 @@ def mlfc_analysis(data_array, manual_window_def=False, equivalence = TO_WE):
         "coordinates_fit": coord_list,
         "fit_data": bort_norm,
         "entrance_dose":{"value":float(entrance_dose), "unit":"%"},
+        "modulation":{"value":float(modulation), "unit":"mm"},
+        "marker":{"value":float(marker_pos), "unit":"mm"},
+        "dose_at_marker":{"value":float(dose_at_marker), "unit":"%"},
     }
 
     return results
+
+def find_marker(x, y, slope):
+    '''
+    markerpos = np.argmax(y)
+    '''
+    deriv = np.gradient(y)
+    for markerpos in range(len(y)):
+        if deriv[markerpos] < slope:
+            continue
+        else:
+            break
+    marker = x[markerpos]
+    value = y[markerpos]
+    #print(marker)
+    return marker, value
 
 
 def Smooth(y, box_pts):                               # convoluzione con un filtro costante di dimensione box_pts = media dei valori nel filtro

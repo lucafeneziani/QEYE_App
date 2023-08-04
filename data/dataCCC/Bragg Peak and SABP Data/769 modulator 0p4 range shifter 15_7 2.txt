@@ -1,0 +1,17 @@
+769 modulator 0.4 range shifter 15_7 2
+
+
+SAMPLING MODE: Continuous
+
+SAMPLING RATE: 1 Hz - 1000 ms
+
+Z CALIBRATION not applied
+
+
+
+----------ERROR LIST----------
+
+
+
+
+

@@ -30,8 +30,8 @@ BRAGG_EPSILON_MAX = 0.2
 TO_WE = 0.120 # mm we per channel - each ionization chamber module corresponds to xx cm WEPL
 
 #QEYE CONSTANTS:
-TO_EYETISSUE = 0.2 # invented value - waiting for real one
-TO_PERSPEX = 0.3   # invented value - waiting for real one
+TO_EYETISSUE = TO_WE/1.05
+TO_PERSPEX = TO_WE/1.16
 
 # GENERAL
 CHANNELS = 512

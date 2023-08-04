@@ -1,0 +1,17 @@
+Modulator 132 new 1mm range shiter 15_7 2
+
+
+SAMPLING MODE: Continuous
+
+SAMPLING RATE: 1 Hz - 1000 ms
+
+Z CALIBRATION not applied
+
+
+
+----------ERROR LIST----------
+
+
+
+
+
