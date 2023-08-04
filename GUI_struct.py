@@ -178,7 +178,7 @@ class QApp(QMainWindow):
         self.lines.resize(round(0.725*width), round(0.34*height))
         self.lines.setStyleSheet(self.line_style)
 
-        # Equivalence buttons
+        # Equivawater_lence buttons
         self.to_we = QPushButton(self)
         self.to_we.setCheckable(True)
         self.to_we.setChecked(True)
@@ -266,7 +266,7 @@ class QApp(QMainWindow):
         self.savebutton = QPushButton(self)
         self.savebutton.setText("Save")
         self.savebutton.move(round(0.63*width), round(0.75*height))
-        self.savebutton.resize(round(0.075*width), round(0.04*height))
+        self.savebutton.resize(round(0.085*width), round(0.04*height))
         self.savebutton.clicked.connect(self.Savefile)
         self.savebutton.setStyleSheet(self.button_style)
         self.savebutton.setEnabled(False)
@@ -389,7 +389,7 @@ class QApp(QMainWindow):
 
         # Manual choose button
         self.manualbutton = QPushButton(self)
-        self.manualbutton.setText("Enable window manual selection")
+        self.manualbutton.setText("Enable manual window selection")
         self.manualbutton.resize(round(0.2*width), round(0.03*height))
         self.manualbutton.move(round(0.78*width), round(0.51*height))
         self.manualbutton.clicked.connect(self.ManualWindow)
@@ -421,7 +421,7 @@ class QApp(QMainWindow):
 
         # Marker button activate
         self.markerbutton = QPushButton(self)
-        self.markerbutton.setText("Enable marker manual selection")
+        self.markerbutton.setText("Enable manual marker selection")
         self.markerbutton.resize(round(0.2*width), round(0.03*height))
         self.markerbutton.move(round(0.78*width), round(0.68*height))
         self.markerbutton.clicked.connect(self.ManualMarker)
@@ -430,7 +430,7 @@ class QApp(QMainWindow):
 
         # Marker edges label
         self.markerlabel = QLabel(self) 
-        self.markerlabel.setText('marker pos:\t0 eq. mm')
+        self.markerlabel.setText('marker position:\t0 eq. mm')
         self.markerlabel.resize(round(0.2*width), round(0.03*height))
         self.markerlabel.move(round(0.79*width), round(0.72*height))
         self.markerlabel.setStyleSheet('border: None')
@@ -711,7 +711,7 @@ class QApp(QMainWindow):
             pass
         self.markerline = pg.InfiniteLine(pos=self.Zres_auto['marker']['value'], pen=self.pen_roi_marker, angle=90, movable=True)
         self.markerlinelabel = pg.InfLineLabel(self.markerline, text='marker\n{:.2f}'.format(self.markerline.value()), position=0.95)
-        self.markerlabel.setText('marker pos:\t{:.2f} eq. mm'.format(self.markerline.value()))
+        self.markerlabel.setText('marker position:\t{:.2f} eq. mm'.format(self.markerline.value()))
         self.markerline.sigPositionChanged.connect(self.Update_markerlabel)
         self.ZPlot.addItem(self.markerline)
 
@@ -721,7 +721,7 @@ class QApp(QMainWindow):
     def Update_markerlabel(self):
         self.markerlinelabel.setText('marker\n{:.2f}'.format(self.markerline.value()))
         self.manual_marker.setChecked(False)
-        self.markerlabel.setText('marker pos:\t{:.2f} eq. mm'.format(self.markerline.value()))
+        self.markerlabel.setText('marker position:\t{:.2f} eq. mm'.format(self.markerline.value()))
         return
 
     def Set_Marker(self):
@@ -788,55 +788,64 @@ class QApp(QMainWindow):
         return
     
     def Savefile(self):
-        self.savebutton.setEnabled(False)
-        self.textbox.setEnabled(False)
 
-        now = datetime.datetime.now()
-        date = now.strftime('%Y%m%d')
-        hour = now.strftime('%H%M%S')
-        name = self.textbox.text()
-        path = QFileDialog.getExistingDirectory(self, os.getcwd())
-        filename = path+'/'+date+'_'+hour+'_'+name+'.txt'
-        
-        if self.to_we.isChecked():
-            eq = 'Water'
-        elif self.to_eyetissue.isChecked():
-            eq = 'Eye tissue'
-        elif self.to_perspex.isChecked():
-            eq = 'Perspex'
+        try:
+            self.savebutton.setEnabled(False)
+            self.textbox.setEnabled(False)
 
-        f = open(filename, 'w')
-        if self.analysis_window != False:
-            f.write('Depth dose profile, {} equivalent length\tAutomatic Fit\tSelected window Fit'.format(eq))
-            f.write('\nWindow\'s range [ch]:\t[{}, {}]\t[{}, {}]\nWindow\'s range [mm]:\t[{:.2f}, {:.2f}]\t[{:.2f}, {:.2f}]\nPeak position:\t{:.2f} {}\t{:.2f} {}\nPeak-plateau ratio:\t{:.2f} {}\t{:.2f} {}\nClinical range (R{:d}):\t{:.2f} {}\t{:.2f} {}\nPeak width (@{:d}%):\t{:.2f} {}\t{:.2f} {}\nEntrance dose:\t{:.2f} {}\t{:.2f} {}\nModulation:\t{:.2f} {}\t{:.2f} {}'.format(
-                            self.Zres_auto['windows_range'][0],self.Zres_auto['windows_range'][1], self.Zres_man['windows_range'][0],self.Zres_man['windows_range'][1],
-                            self.Zres_auto['windows_range'][0]*self.to_equivalence,self.Zres_auto['windows_range'][1]*self.to_equivalence, self.Zres_man['windows_range'][0]*self.to_equivalence,self.Zres_man['windows_range'][1]*self.to_equivalence,
-                            self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'], self.Zres_man['peak_pos']['value'],self.Zres_man['peak_pos']['unit'],
-                            self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'], self.Zres_man['pp_ratio']['value'],self.Zres_man['pp_ratio']['unit'],
-                            int(CLINICAL_RANGE_PERC*100),self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'], self.Zres_man['cl_range']['value'],self.Zres_man['cl_range']['unit'],
-                            int(PEAK_WIDTH_PERC*100),self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit'], self.Zres_man['peak_width']['value'],self.Zres_man['peak_width']['unit'],
-                            self.Zres_auto['entrance_dose']['value'],self.Zres_auto['entrance_dose']['unit'], self.Zres_man['entrance_dose']['value'],self.Zres_man['entrance_dose']['unit'],
-                            self.modulation_auto,self.Zres_auto['modulation']['unit'], self.modulation_man,self.Zres_man['modulation']['unit'],
-                            ))
-            f.write('\n\n{} equivalent length\tAutomatic Fit\tSelected window Fit'.format(eq))
-            for i in range(len(self.Zres_auto['coordinates_raw'])):
-                f.write('\n{:.2f}\t{:.2f}\t{:.2f}'.format(self.Zres_auto['coordinates_raw'][i], self.Zres_auto['fit_data'][i], self.Zres_man['fit_data'][i]))
-        else:
-            f.write('Depth dose profile, {} equivalent length\tAutomatic Fit'.format(eq))
-            f.write('\nWindow\'s range [ch]:\t[{}, {}]\nWindow\'s range [mm]:\t[{:.2f}, {:.2f}]\nPeak position:\t{:.2f} {}\nPeak-plateau ratio:\t{:.2f} {}\nClinical range (R{:d}):\t{:.2f} {}\nPeak width (@{:d}%):\t{:.2f} {}\nEntrance dose:\t{:.2f} {}\nModulation:\t{:.2f} {}'.format(
-                            self.Zres_auto['windows_range'][0], self.Zres_auto['windows_range'][1],
-                            self.Zres_auto['windows_range'][0]*self.to_equivalence,self.Zres_auto['windows_range'][1]*self.to_equivalence,
-                            self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'],
-                            self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'],
-                            int(CLINICAL_RANGE_PERC*100),self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'],
-                            int(PEAK_WIDTH_PERC*100),self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit'],
-                            self.Zres_auto['entrance_dose']['value'],self.Zres_auto['entrance_dose']['unit'],
-                            self.modulation_auto,self.Zres_auto['modulation']['unit'],
-                            ))
-            f.write('\n\n{} equivalent length\tAutomatic Fit'.format(eq))
-            for i in range(len(self.Zres_auto['coordinates_raw'])):
-                f.write('\n{:.2f}\t{:.2f}'.format(self.Zres_auto['coordinates_raw'][i], self.Zres_auto['fit_data'][i]))
-        f.close()
+            now = datetime.datetime.now()
+            date = now.strftime('%Y%m%d')
+            hour = now.strftime('%H%M%S')
+            name = self.textbox.text()
+            path = QFileDialog.getExistingDirectory(self, os.getcwd())
+            filename = path+'/'+date+'_'+hour+'_'+name+'.txt'
+            
+            if self.to_we.isChecked():
+                eq = 'Water'
+            elif self.to_eyetissue.isChecked():
+                eq = 'Eye tissue'
+            elif self.to_perspex.isChecked():
+                eq = 'Perspex'
+
+            f = open(filename, 'w')
+            if self.analysis_window != False:
+                f.write('Depth dose profile, {} equivalent length\tAutomatic Fit\tSelected window Fit'.format(eq))
+                f.write('\nWindow\'s range [ch]:\t[{}, {}]\t[{}, {}]\nWindow\'s range [mm]:\t[{:.2f}, {:.2f}]\t[{:.2f}, {:.2f}]\nPeak position:\t{:.2f} {}\t{:.2f} {}\nPeak-plateau ratio:\t{:.2f} {}\t{:.2f} {}\nClinical range (R{:d}):\t{:.2f} {}\t{:.2f} {}\nPeak width (@{:d}%):\t{:.2f} {}\t{:.2f} {}\nEntrance dose:\t{:.2f} {}\t{:.2f} {}\nModulation:\t{:.2f} {}\t{:.2f} {}'.format(
+                                self.Zres_auto['windows_range'][0],self.Zres_auto['windows_range'][1], self.Zres_man['windows_range'][0],self.Zres_man['windows_range'][1],
+                                self.Zres_auto['windows_range'][0]*self.to_equivalence,self.Zres_auto['windows_range'][1]*self.to_equivalence, self.Zres_man['windows_range'][0]*self.to_equivalence,self.Zres_man['windows_range'][1]*self.to_equivalence,
+                                self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'], self.Zres_man['peak_pos']['value'],self.Zres_man['peak_pos']['unit'],
+                                self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'], self.Zres_man['pp_ratio']['value'],self.Zres_man['pp_ratio']['unit'],
+                                int(CLINICAL_RANGE_PERC*100),self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'], self.Zres_man['cl_range']['value'],self.Zres_man['cl_range']['unit'],
+                                int(PEAK_WIDTH_PERC*100),self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit'], self.Zres_man['peak_width']['value'],self.Zres_man['peak_width']['unit'],
+                                self.Zres_auto['entrance_dose']['value'],self.Zres_auto['entrance_dose']['unit'], self.Zres_man['entrance_dose']['value'],self.Zres_man['entrance_dose']['unit'],
+                                self.modulation_auto,self.Zres_auto['modulation']['unit'], self.modulation_man,self.Zres_man['modulation']['unit'],
+                                ))
+                f.write('\n\n{} equivalent length\tAutomatic Fit\tSelected window Fit'.format(eq))
+                for i in range(len(self.Zres_auto['coordinates_raw'])):
+                    f.write('\n{:.2f}\t{:.2f}\t{:.2f}'.format(self.Zres_auto['coordinates_raw'][i], self.Zres_auto['fit_data'][i], self.Zres_man['fit_data'][i]))
+            else:
+                f.write('Depth dose profile, {} equivalent length\tAutomatic Fit'.format(eq))
+                f.write('\nWindow\'s range [ch]:\t[{}, {}]\nWindow\'s range [mm]:\t[{:.2f}, {:.2f}]\nPeak position:\t{:.2f} {}\nPeak-plateau ratio:\t{:.2f} {}\nClinical range (R{:d}):\t{:.2f} {}\nPeak width (@{:d}%):\t{:.2f} {}\nEntrance dose:\t{:.2f} {}\nModulation:\t{:.2f} {}'.format(
+                                self.Zres_auto['windows_range'][0], self.Zres_auto['windows_range'][1],
+                                self.Zres_auto['windows_range'][0]*self.to_equivalence,self.Zres_auto['windows_range'][1]*self.to_equivalence,
+                                self.Zres_auto['peak_pos']['value'],self.Zres_auto['peak_pos']['unit'],
+                                self.Zres_auto['pp_ratio']['value'],self.Zres_auto['pp_ratio']['unit'],
+                                int(CLINICAL_RANGE_PERC*100),self.Zres_auto['cl_range']['value'],self.Zres_auto['cl_range']['unit'],
+                                int(PEAK_WIDTH_PERC*100),self.Zres_auto['peak_width']['value'],self.Zres_auto['peak_width']['unit'],
+                                self.Zres_auto['entrance_dose']['value'],self.Zres_auto['entrance_dose']['unit'],
+                                self.modulation_auto,self.Zres_auto['modulation']['unit'],
+                                ))
+                f.write('\n\n{} equivalent length\tAutomatic Fit'.format(eq))
+                for i in range(len(self.Zres_auto['coordinates_raw'])):
+                    f.write('\n{:.2f}\t{:.2f}'.format(self.Zres_auto['coordinates_raw'][i], self.Zres_auto['fit_data'][i]))
+            f.close()
+
+            self.message.setText('File saved successfully')
+            self.message.setStyleSheet('background-color: white; color: black')
+
+        except:
+            self.message.setText('ERROR while saving file')
+            self.message.setStyleSheet('background-color: white; color: red')
 
         return
 
@@ -891,7 +900,7 @@ class QApp(QMainWindow):
         self.removebkg.setText("Remove BKG from data")
         self.textbox.setText("")
         self.textbox.setEnabled(False)
-        self.markerlabel.setText('marker pos:\t0 eq. mm')
+        self.markerlabel.setText('marker position:\t0 eq. mm')
 
         self.message.setText('')
         self.message.setStyleSheet('background-color: white; color: black')

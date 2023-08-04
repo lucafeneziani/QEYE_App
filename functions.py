@@ -140,7 +140,7 @@ def mlfc_analysis(data_array, manual_window_def=False, equivalence = TO_WE):
     entrance_dose = np.mean(bort_norm[0:10])
 
     # Modulation
-    marker_pos, dose_at_marker = find_marker(coord_list, bort_norm, 0.7)
+    marker_pos, dose_at_marker = find_marker(coord_list, bort_norm, 0)
     modulation = cl_range - marker_pos
     
     results = {
@@ -161,19 +161,17 @@ def mlfc_analysis(data_array, manual_window_def=False, equivalence = TO_WE):
 
     return results
 
-def find_marker(x, y, slope):
-    '''
-    markerpos = np.argmax(y)
-    '''
-    deriv = np.gradient(y)
+def find_marker(x, y, grad):
+
+    deriv = np.gradient(np.gradient(y))
     for markerpos in range(len(y)):
-        if deriv[markerpos] < slope:
+        if deriv[markerpos] > grad:
             continue
         else:
             break
     marker = x[markerpos]
     value = y[markerpos]
-    #print(marker)
+    
     return marker, value
 
 
